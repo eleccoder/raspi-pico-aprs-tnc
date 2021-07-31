@@ -10,7 +10,7 @@ APRS (text msg + geo-coordinates + meta-data) -> AX.25 -> PCM -> PWM -> Low-Pass
 ## Preliminaries
 
 Your host platform is assumed to be LINUX.
-If you have already installed the Pico-SDK, set the `PICO_SDK_PATH` environment variable accordingly to avoid installing the SDK it twice.
+If you have already installed the Pico-SDK, set the `PICO_SDK_PATH` environment variable accordingly to avoid installing the SDK twice.
 
 ## Hardware
 
