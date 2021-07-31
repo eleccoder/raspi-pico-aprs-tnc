@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
+
 include(cmake/pico_sdk_import.cmake)
+include(cmake/pico_extras_import.cmake)
 
 project(raspi-pico-aprs-tnc VERSION 0.1)
 
@@ -13,8 +15,8 @@ pico_sdk_init()
 
 include(FetchContent)
 FetchContent_Declare(ax25_aprs_lib
-  GIT_REPOSITORY    "https://github.com/eleccoder/ax25-aprs-lib.git" 
-  GIT_SHALLOW       ON
+    GIT_REPOSITORY    "https://github.com/eleccoder/ax25-aprs-lib.git" 
+    GIT_SHALLOW       ON
 )
 
 FetchContent_MakeAvailable(ax25_aprs_lib)
@@ -27,15 +29,25 @@ add_library(ax25_aprs_lib::ax25beacon ALIAS ax25beacon)
 set(EXE_NAME aprs_pico)
 
 add_executable(${EXE_NAME}
-src/aprs_pico.c
+    src/aprs_pico.c
 )
 
-target_include_directories(${EXE_NAME} PRIVATE include)
+target_include_directories(${EXE_NAME} PRIVATE
+    include
+)
+
+#target_compile_options(${EXE_NAME} PRIVATE "-Wall")
 
 # Set the console interface
 pico_enable_stdio_usb(aprs_pico 1) # USB
 # pico_enable_stdio_uart(aprs_pico 1) # UART
 
+# create map/bin/hex file etc.
 pico_add_extra_outputs(${EXE_NAME})
-target_link_libraries(${EXE_NAME} pico_stdlib ax25_aprs_lib::ax25beacon)
+
+target_link_libraries(${EXE_NAME}
+    pico_stdlib
+    pico_audio_pwm
+    ax25_aprs_lib::ax25beacon
+)
 
