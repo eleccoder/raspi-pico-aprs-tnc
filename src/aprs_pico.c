@@ -34,9 +34,9 @@
 
 typedef struct AudioCallBackUserData
 {
-  uint aprs_sample_freq_in_hz;
-  bool is_loop;
-
+  uint    aprs_sample_freq_in_hz;
+  bool    is_loop;
+  uint8_t volume;
 } AudioCallBackUserData_t;
 
 
@@ -96,11 +96,9 @@ static void init(uint sample_freq_in_hz)
 
 
 static void fill_audio_buffer(audio_buffer_pool_t* audio_pool, const int16_t* pcm_data,
-                              uint num_samples, bool is_loop_forever)
+                              uint num_samples, uint8_t volume, bool is_loop_forever)
 {
-  uint          pos    = 0u;
-  const uint8_t volume = 128u;
-
+  uint pos           = 0u;
   bool is_keep_going = true;
 
   while (is_keep_going)
@@ -134,7 +132,7 @@ static void fill_audio_buffer(audio_buffer_pool_t* audio_pool, const int16_t* pc
 
 
 // Test tone: 1 kHz sine wave
-static void send1kHz(uint sample_freq_in_hz)
+static void send1kHz(uint sample_freq_in_hz, uint8_t volume)
 {
   init(sample_freq_in_hz);
 
@@ -155,7 +153,7 @@ static void send1kHz(uint sample_freq_in_hz)
 
   audio_buffer_pool_t* audio_pool = init_audio(sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
 
-  fill_audio_buffer(audio_pool, sine_wave_table, num_samples, true);
+  fill_audio_buffer(audio_pool, sine_wave_table, num_samples, volume, true);
 
   free(sine_wave_table);
 }
@@ -167,24 +165,26 @@ static void sendAPRS_audioCallback(void* callback_user_data, int16_t* pcm_data, 
 
   audio_buffer_pool_t* audio_pool = init_audio(user_data.aprs_sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
 
-  fill_audio_buffer(audio_pool, pcm_data, num_samples, user_data.is_loop);
+  fill_audio_buffer(audio_pool, pcm_data, num_samples, user_data.volume, user_data.is_loop);
 }
 
 
-static void sendAPRS(const char*  call_sign_src,
-                     const char*  call_sign_dst,
-                     const char*  aprs_path_1,
-                     const char*  aprs_path_2,
-                     const char*  aprs_message,
-                     const double latitude_in_deg,
-                     const double longitude_in_deg,
-                     const double altitude_in_m,
-                     const bool   is_loop)
+static void sendAPRS(const char*   call_sign_src,
+                     const char*   call_sign_dst,
+                     const char*   aprs_path_1,
+                     const char*   aprs_path_2,
+                     const char*   aprs_message,
+                     const double  latitude_in_deg,
+                     const double  longitude_in_deg,
+                     const double  altitude_in_m,
+                     const uint8_t volume,
+                     const bool    is_loop)
 {
   static AudioCallBackUserData_t callback_user_data;
 
   callback_user_data.aprs_sample_freq_in_hz = 48000u; // Known from the 'ax25beacon' library
   callback_user_data.is_loop                = is_loop;
+  callback_user_data.volume                 = volume;
 
   init(callback_user_data.aprs_sample_freq_in_hz);
 
@@ -206,7 +206,8 @@ int main()
 {
 #if (SINE_WAVE_TEST == 1)
 
-  send1kHz(PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ);
+  const uint8_t VOLUME = 128u;
+  send1kHz(PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ, VOLUME);
 
 #else // !SINE_WAVE_TEST
 
@@ -219,6 +220,7 @@ int main()
            10.0,   // Lat in deg
            20.0,   // Long in deg
            100.0,  // Alt in m
+           128u,   // Volume (0 ... 255)
            false); // Loop forever
 
 #endif // SINE_WAVE_TEST, !SINE_WAVE_TEST
