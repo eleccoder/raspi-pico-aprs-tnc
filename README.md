@@ -1,11 +1,13 @@
 # raspi-pico-aprs-tnc
 A TX-only [TNC](https://en.wikipedia.org/wiki/Terminal_node_controller) (Terminal Network Controller) to generate the [AFSK](https://en.wikipedia.org/wiki/Frequency-shift_keying#Audio_FSK) audio tones for [APRS](https://en.wikipedia.org/wiki/Automatic_Packet_Reporting_System) (Automatic Packet Reporting System) messages using a [Raspberry Pi Pico](https://en.wikipedia.org/wiki/Raspberry_Pi) microcontroller board.
 
-An analog line-out audio signal will be produced at GPIO-pin 'GP0'. You can observe it by using a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
+An analog line-out audio signal will be generated at GPIO-pin 'GP0'. You can observe it by using a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
 
-![AFSK scope screenshot](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/afsk_scope.png "Scope screenshot of an AFSK output signal")
+![AFSK scope screenshot](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/afsk_scope.png)
 
-Basically, this is the data/signal flow:
+Image: Pico's output signal probed by a DSO. We clearly see the 1200 Hz and 2200 Hz tones of the 1200 Bd 2-AFSK.
+
+Basically, the data/signal flow is as follows:
 
 ```
 APRS (text msg + geo-coordinates + meta-data) -> AX.25 -> PCM -> PWM -> Band-Pass filtering -> AFSK audio signal
@@ -16,7 +18,7 @@ Both a static library `libaprs_pico.a` and an example application will be genera
 
 ## Preliminaries
 
-Your host platform is assumed to be LINUX.
+Your host platform for cross-compilation is assumed to be LINUX.
 
 1. Install the Pico-SDK following the instructions given in the [Raspberry Pi 'Getting Started' Guide](https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf) (pdf)
 1. Set the `PICO_SDK_PATH` environment variable to point to your Pico-SDK installation directory
@@ -50,10 +52,10 @@ The GPIO-pin 'GP0' is the line-out for the analog AFSK-signal. You can observe i
 
 - [x] Thorough evaluation, in general
 - [x] Send the APRS message on the console (USB or UART) rather than hard-coding
-- [x] Show how to connect to a Baofeng HT
-- [x] PTT control for RF tranceivers
+- [x] Show how to physically connect to a Baofeng HT
+- [x] PTT control for RF transceivers
 
-## Acknowledgements
+## Ingredients / Acknowledgements
 
-- For APRS => AX.25 conversion I'm using a [modified version](https://github.com/eleccoder/ax25-aprs-lib) of [fsphil's ax25beacon](https://github.com/fsphil/ax25beacon)
+- For APRS => AX.25 => PCM conversion I'm using [my modified version](https://github.com/eleccoder/ax25-aprs-lib) of [fsphil's ax25beacon](https://github.com/fsphil/ax25beacon)
 - For PCM => PWM conversion I'm using the audio lib from [pico-extras](https://github.com/raspberrypi/pico-extras) (WARNING: maturity seems to be alpha/beta)
