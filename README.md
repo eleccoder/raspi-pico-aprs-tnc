@@ -18,8 +18,7 @@ If you have already installed the Pico-SDK, set the `PICO_SDK_PATH` environment 
 
 We just need a simple band-pass filter to extract the AFSK-signal from the PWM signal:
 
-![band-pass](https://github.com/eleccoder/raspi-pico-aprs-tnc/doc/schematic/band_pass_filter.png)
-
+![band-pass filter](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/schematic/band_pass_filter.png)
 
 ## Build the application
 
