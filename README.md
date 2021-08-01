@@ -6,7 +6,7 @@ An analog line-out audio signal will be produced at GPIO-pin 'GP0'. You can obse
 Basically, this is the data/signal flow:
 
 ```
-APRS (text msg + geo-coordinates + meta-data) -> AX.25 -> PCM -> PWM -> Low-Pass filtering -> AFSK signal @ GPIO 'GP0'
+APRS (text msg + geo-coordinates + meta-data) -> AX.25 -> PCM -> PWM -> Low-Pass filtering -> AFSK signal
 ```
 
 ## Preliminaries
@@ -37,6 +37,8 @@ cd build
 
 The GPIO-pin 'GP0' is the line-out for the analog AFSK-signal. You can observe it by using a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
 
+![AFSK scope screenshot](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/afsk_scope.png "Scope screenshot of an AFSK output signal")
+
 ## Modify the application
 
 To send an APRS message of your choice, you have to modify the *main()* function in `src/aprs_pico.c`.
@@ -49,3 +51,7 @@ To send an APRS message of your choice, you have to modify the *main()* function
 - [x] Show how to connect to a Baofeng HT
 - [x] PTT control for HTs
 
+## Acknowledgements
+
+- For APRS => AX.25 conversion I'm using a [modified version](https://github.com/eleccoder/ax25-aprs-lib) of [fsphil's ax25beacon](https://github.com/fsphil/ax25beacon)
+- For PCM => PWM conversion I'm using the audio lib from [pico-extras](https://github.com/raspberrypi/pico-extras) (WARNING: maturity seems to be alpha/beta)
