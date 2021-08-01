@@ -30,12 +30,20 @@
 typedef struct AudioCallBackUserData
 {
   unsigned int aprs_sample_freq_in_hz;
-  bool         is_loop;
+  bool         is_loop_forever;
   uint8_t      volume;
 
 } AudioCallBackUserData_t;
 
 
+/** \brief Init function for the Pico audio PWM library
+ *
+ * \param sample_freq_in_hz   The sampling frequency to be used for audio signals
+ * \param audio_buffer_format The format of the audio buffers to be created, representing
+ *                            the data format of the audio samples
+ *
+ * \return                    A pool of audio buffers to be used for rendering an audio signal
+ */
 static audio_buffer_pool_t* init_audio(unsigned int sample_freq_in_hz, uint16_t audio_buffer_format)
 {
   const int NUM_AUDIO_BUFFERS  = 3;
@@ -64,7 +72,11 @@ static audio_buffer_pool_t* init_audio(unsigned int sample_freq_in_hz, uint16_t 
 }
 
 
-static void init(unsigned int sample_freq_in_hz)
+/** \brief Init function for the Pico's clock system and the Pico's standard library
+ *
+ * \param sample_freq_in_hz  The sampling frequency to be used for rendering audio signals
+ */
+static void init_system(unsigned int sample_freq_in_hz)
 {
   // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
   //          This is documented here: https://github.com/raspberrypi/pico-extras
@@ -79,7 +91,10 @@ static void init(unsigned int sample_freq_in_hz)
       // Compensate a non-'PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
       // by a adapting the system clock accordingly
 
-      float sys_clock_in_mhz = 48.0f * (float)sample_freq_in_hz / (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
+      const float SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ = 48.0f;
+
+      float sys_clock_in_mhz = SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ * (float)sample_freq_in_hz /
+                               (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
 
       // Round to full Mhz to increase the chance that 'set_sys_clock_khz()' can exactly realize this frequency
       sys_clock_in_mhz = round(sys_clock_in_mhz);
@@ -91,8 +106,16 @@ static void init(unsigned int sample_freq_in_hz)
 }
 
 
-static void fill_audio_buffer(audio_buffer_pool_t* audio_pool, const int16_t* pcm_data,
-                              unsigned int num_samples, uint8_t volume, bool is_loop_forever)
+/** \brief Renders given PCM audio samples
+ *
+ * \param audio_pool       The pool of audio buffers to be used for rendering an audio signal
+ * \param pcm_data         The PCM audio samples to be rendered
+ * \param num_samples      The number of samples to be rendered
+ * \param volume           The volume level of the generated AFSK signal (0 ... 255)
+ * \param is_loop_forever  If 'true', the rendering of the audio samples will be continuously repeated
+ */
+static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t* pcm_data,
+                                 unsigned int num_samples, uint8_t volume, bool is_loop_forever)
 {
   unsigned int pos   = 0u;
   bool is_keep_going = true;
@@ -127,20 +150,26 @@ static void fill_audio_buffer(audio_buffer_pool_t* audio_pool, const int16_t* pc
 }
 
 
+/** \brief The callback function to render the generated PCM audio samples of an APRS message
+ *
+ * \param callback_user_data  User data provided by the caller function of this callback
+ * \param pcm_data            The PCM audio samples to be rendered
+ * \param num_samples         The number of samples the PCM data consist of
+ */
 static void sendAPRS_audioCallback(void* callback_user_data, int16_t* pcm_data, size_t num_samples)
 {
   const AudioCallBackUserData_t user_data = *((const AudioCallBackUserData_t*)callback_user_data);
 
   audio_buffer_pool_t* audio_pool = init_audio(user_data.aprs_sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
 
-  fill_audio_buffer(audio_pool, pcm_data, num_samples, user_data.volume, user_data.is_loop);
+  render_audio_samples(audio_pool, pcm_data, num_samples, user_data.volume, user_data.is_loop_forever);
 }
 
 
-// Test tone: 1 kHz sine wave
+// See the header file for documentation
 void send1kHz( unsigned int sample_freq_in_hz, uint8_t volume)
 {
-  init(sample_freq_in_hz);
+  init_system(sample_freq_in_hz);
 
   const unsigned int TONE_FREQ_IN_HZ = 1000u;
   const unsigned int num_samples     = sample_freq_in_hz / TONE_FREQ_IN_HZ;
@@ -159,12 +188,13 @@ void send1kHz( unsigned int sample_freq_in_hz, uint8_t volume)
 
   audio_buffer_pool_t* audio_pool = init_audio(sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
 
-  fill_audio_buffer(audio_pool, sine_wave_table, num_samples, volume, true);
+  render_audio_samples(audio_pool, sine_wave_table, num_samples, volume, true);
 
   free(sine_wave_table);
 }
 
 
+// See the header file for documentation
 void sendAPRS(const char*   call_sign_src,
               const char*   call_sign_dst,
               const char*   aprs_path_1,
@@ -174,15 +204,15 @@ void sendAPRS(const char*   call_sign_src,
               const double  longitude_in_deg,
               const double  altitude_in_m,
               const uint8_t volume,
-              const bool    is_loop)
+              const bool    is_loop_forever)
 {
   static AudioCallBackUserData_t callback_user_data;
 
   callback_user_data.aprs_sample_freq_in_hz = 48000u; // Known from the 'ax25beacon' library
-  callback_user_data.is_loop                = is_loop;
+  callback_user_data.is_loop_forever        = is_loop_forever;
   callback_user_data.volume                 = volume;
 
-  init(callback_user_data.aprs_sample_freq_in_hz);
+  init_system(callback_user_data.aprs_sample_freq_in_hz);
 
   ax25_beacon((void*)&callback_user_data,
               sendAPRS_audioCallback,

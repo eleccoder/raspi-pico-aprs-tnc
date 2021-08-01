@@ -18,7 +18,7 @@
 
 #include <aprs_pico.h>
 
-#define SINE_WAVE_TEST (0) // For test & debug
+#define SINE_WAVE_TEST (0) // For testing & debugging
 
 
 int main()
@@ -36,9 +36,9 @@ int main()
            "PATH1",
            "PATH2",
            "Test message",
-           10.0,   // Lat in deg
-           20.0,   // Long in deg
-           100.0,  // Alt in m
+           10.0,   // Latitude in deg
+           20.0,   // Longitude in deg
+           100.0,  // Altitude in m
            128u,   // Volume (0 ... 255)
            false); // Loop forever
 

@@ -27,6 +27,19 @@
 #define APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ  (22050)
 
 
+/** \brief Generates the analog AFSK signal for a given APRS message at GPIO-pin 'GP0'
+ *
+ * \param call_sign_src     The source      call sign
+ * \param call_sign_dst     The destination call sign
+ * \param aprs_path_1       The first  APRS path
+ * \param aprs_path_2       The second APRS path
+ * \param aprs_message      The APRS message text
+ * \param latitude_in_deg   The latitude  of the geo-location (in degrees)
+ * \param longitude_in_deg  The longitude of the geo-location (in degrees)
+ * \param altitude_in_m     The altitude  of the geo-location (in meters)
+ * \param volume            The volume level of the generated AFSK signal (0 ... 255)
+ * \param is_loop_forever   If 'true', the transmission of the signal will be continuously repeated
+ */
 void sendAPRS(const char*   call_sign_src,
               const char*   call_sign_dst,
               const char*   aprs_path_1,
@@ -36,9 +49,17 @@ void sendAPRS(const char*   call_sign_src,
               const double  longitude_in_deg,
               const double  altitude_in_m,
               const uint8_t volume,
-              const bool    is_loop);
+              const bool    is_loop_forever);
 
 
+/** \brief Generates a 1 KHz sine wave signal at GPIO-pin 'GP0'
+ *
+ * \param sample_freq_in_hz  The sampling frequency to be used for the audio signal
+ * \param volume             The volume level of the generated AFSK signal (0 ... 255)
+ *
+ * \warning ATTOW, use 'APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' as
+ *          the only value for the 'sample_freq_in_hz' parameter
+ */
 void send1kHz(unsigned int sample_freq_in_hz, uint8_t volume);
 
 #endif // APRS_PICO_H
