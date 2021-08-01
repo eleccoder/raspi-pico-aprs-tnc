@@ -26,9 +26,11 @@
 #include <ax25beacon.h>
 
 
-// Do not change: ATTOW, the pico audio lib worked only @ 22050 Hz sampling frequency
-#define SAMPLE_FREQ_IN_HZ  (22050)
-#define SEND_LOOP_DEBUG    (1) // For debug
+// WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
+//          This is documented here https://github.com/raspberrypi/pico-extras
+#define PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ  (22050)
+#define SEND_LOOP_DEBUG                                   (0)     // For test & debug
+#define SINE_WAVE_TEST                                    (0)     // For test & debug
 
 
 
@@ -62,23 +64,25 @@ audio_buffer_pool_t* init_audio(uint sample_freq_in_hz, uint16_t audio_buffer_fo
 
 static void init(uint sample_freq_in_hz)
 {
-  // NOTE: ATTOW, the pico audio lib worked only @ 22050 Hz sampling frequency,
-  //       related to 48 MHz system clock
+  // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
+  //          This is documented here https://github.com/raspberrypi/pico-extras
 
-  const uint SAMPLING_FREQ_REF_IN_HZ = 22050;
-  const uint SYSTEM_CLOCK_REF_IN_KHZ = 48000;
-
-  if (sample_freq_in_hz == SAMPLING_FREQ_REF_IN_HZ)
+  if (sample_freq_in_hz == PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ)
     {
+      // This is the safe case, see the comment above
       set_sys_clock_48mhz();
     }
   else
     {
-      // Compensate a non-reference sampling frequency by a different system clock frequency
-      // To be improved: System clock may be imprecise
+      // Compensate a non-'PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
+      // by a adapting the system clock accordingly
 
-      // set_sys_clock_khz((uint32_t)((float)SYSTEM_CLOCK_REF_IN_KHZ * (float)sample_freq_in_hz / (float)SAMPLING_FREQ_REF_IN_HZ), false);
-      set_sys_clock_khz(105000, false); // HACK
+      float sys_clock_in_mhz = 48.0f * (float)sample_freq_in_hz / (float)PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
+
+      // Round to full Mhz to increase the chance that 'set_sys_clock_khz()' can exactly realize this frequency
+      sys_clock_in_mhz = round(sys_clock_in_mhz);
+
+      set_sys_clock_khz(1000u * (uint32_t)sys_clock_in_mhz, false);
     }
 
   stdio_init_all();
@@ -129,7 +133,7 @@ static void send1kHz(uint sample_freq_in_hz)
 
   for (uint i = 0u; i < num_samples; i++)
     {
-      sine_wave_table[i] = 32767 * sinf(2.0f * (float)M_PI * (float)i / (float)num_samples);
+      sine_wave_table[i] = (int16_t)(32767.0f * sinf(2.0f * (float)M_PI * (float)i / (float)num_samples));
     }
 
   audio_buffer_pool_t* audio_pool = init_audio(sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
@@ -171,6 +175,7 @@ static void sendAPRS(const char* call_sign_src,
                      const double longitude_in_deg,
                      const double altitude_in_m)
 {
+  // Known from the 'ax25beacon' library
   static const uint APRS_SAMPL_FREQ_IN_HZ = 48000u;
 
   init(APRS_SAMPL_FREQ_IN_HZ);
@@ -191,7 +196,11 @@ static void sendAPRS(const char* call_sign_src,
 
 int main()
 {
-  // send1kHz(SAMPLE_FREQ_IN_HZ); // For test & debug
+#if (SINE_WAVE_TEST == 1)
+
+  send1kHz(PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ);
+
+#else // !SINE_WAVE_TEST
 
   // Send an APRS test message
   sendAPRS("SRC",  // Src call sign
@@ -203,6 +212,8 @@ int main()
            20.0,   // Long in deg
            100.0   // Alt in m
   );
+
+#endif // SINE_WAVE_TEST, !SINE_WAVE_TEST
 
   return 0;
 }
