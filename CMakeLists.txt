@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 
-# Setup of eleccoder's 'ax25-aprs-lib'
+# (1) Setup of eleccoder's 'ax25-aprs-lib'
 
 include(FetchContent)
 FetchContent_Declare(ax25_aprs_lib
@@ -24,30 +24,56 @@ FetchContent_MakeAvailable(ax25_aprs_lib)
 add_library(ax25_aprs_lib::ax25beacon ALIAS ax25beacon)
 
 
-# Setup of the application
+# (2) Configure the library build
 
-set(EXE_NAME aprs_pico)
+set(TARGET_LIB_NAME aprs_pico)
 
-add_executable(${EXE_NAME}
-    src/aprs_pico.c
+add_library(${TARGET_LIB_NAME}
+    src/aprs_pico.c)
+
+set_target_properties(${TARGET_LIB_NAME}
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
-
-target_include_directories(${EXE_NAME} PRIVATE
+  
+target_include_directories(${TARGET_LIB_NAME} PUBLIC
     include
 )
 
-#target_compile_options(${EXE_NAME} PRIVATE "-Wall")
+# Enable on demand
+#target_compile_options(${TARGET_LIB_NAME} PRIVATE "-Wundef;-Wall")
+
+# This properly resolves the include dirs of the dependent libraries
+target_link_libraries(${TARGET_LIB_NAME}
+    ax25_aprs_lib::ax25beacon
+    pico_audio_pwm        
+    pico_stdlib
+)
+
+
+# (3) Configure the example application build
+
+set(TARGET_EXAMPLE_EXE_NAME aprs_pico_example)
+
+add_executable(${TARGET_EXAMPLE_EXE_NAME}
+    src/aprs_pico_example.c
+)
+
+target_include_directories(${TARGET_EXAMPLE_EXE_NAME} PRIVATE
+  include
+)
 
 # Set the console interface
-pico_enable_stdio_usb(aprs_pico 1) # USB
-# pico_enable_stdio_uart(aprs_pico 1) # UART
+pico_enable_stdio_usb(${TARGET_EXAMPLE_EXE_NAME} 1) # USB
+#pico_enable_stdio_uart(${TARGET_EXAMPLE_EXE_NAME} 1) # UART
 
 # create map/bin/hex file etc.
-pico_add_extra_outputs(${EXE_NAME})
+pico_add_extra_outputs(${TARGET_EXAMPLE_EXE_NAME})
 
-target_link_libraries(${EXE_NAME}
-    pico_stdlib
-    pico_audio_pwm
+target_link_libraries(${TARGET_EXAMPLE_EXE_NAME}
+    ${TARGET_LIB_NAME}
     ax25_aprs_lib::ax25beacon
+    pico_audio_pwm        
+    pico_stdlib
 )
 
