@@ -25,7 +25,7 @@ int main()
 {
 #if (SINE_WAVE_TEST == 1)
 
-  const uint8_t VOLUME = 128u;
+  const uint16_t VOLUME = 128u;
   send1kHz(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ, VOLUME);
 
 #else // !SINE_WAVE_TEST
@@ -39,8 +39,8 @@ int main()
            10.0,   // Latitude in deg
            20.0,   // Longitude in deg
            100.0,  // Altitude in m
-           128u,   // Volume (0 ... 255)
-           false); // Loop forever
+           128u,   // Volume (0 ... 256)
+           true);  // Loop forever
 
 #endif // SINE_WAVE_TEST, !SINE_WAVE_TEST
 

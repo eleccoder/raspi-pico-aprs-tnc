@@ -31,7 +31,7 @@ typedef struct AudioCallBackUserData
 {
   unsigned int aprs_sample_freq_in_hz;
   bool         is_loop_forever;
-  uint8_t      volume;
+  uint16_t     volume; // Valid range: 0 ... 256
 
 } AudioCallBackUserData_t;
 
@@ -111,11 +111,11 @@ static void init_system(unsigned int sample_freq_in_hz)
  * \param audio_pool       The pool of audio buffers to be used for rendering an audio signal
  * \param pcm_data         The PCM audio samples to be rendered
  * \param num_samples      The number of samples to be rendered
- * \param volume           The volume level of the generated AFSK signal (0 ... 255)
+ * \param volume           The volume level of the generated AFSK signal (0 ... 256)
  * \param is_loop_forever  If 'true', the rendering of the audio samples will be continuously repeated
  */
 static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t* pcm_data,
-                                 unsigned int num_samples, uint8_t volume, bool is_loop_forever)
+                                 unsigned int num_samples, uint16_t volume, bool is_loop_forever)
 {
   unsigned int pos   = 0u;
   bool is_keep_going = true;
@@ -127,7 +127,7 @@ static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t*
 
       for (unsigned int i = 0u; i < buffer->max_sample_count; i++)
         {
-          samples[i] = (volume * pcm_data[pos]) >> 8u;
+          samples[i] = ((int32_t)volume * (int32_t)pcm_data[pos]) >> 8u;
           pos++;
 
           if (pos == num_samples)
@@ -167,7 +167,7 @@ static void sendAPRS_audioCallback(void* callback_user_data, int16_t* pcm_data, 
 
 
 // See the header file for documentation
-void send1kHz( unsigned int sample_freq_in_hz, uint8_t volume)
+void send1kHz( unsigned int sample_freq_in_hz, uint16_t volume)
 {
   init_system(sample_freq_in_hz);
 
@@ -195,16 +195,16 @@ void send1kHz( unsigned int sample_freq_in_hz, uint8_t volume)
 
 
 // See the header file for documentation
-void sendAPRS(const char*   call_sign_src,
-              const char*   call_sign_dst,
-              const char*   aprs_path_1,
-              const char*   aprs_path_2,
-              const char*   aprs_message,
-              const double  latitude_in_deg,
-              const double  longitude_in_deg,
-              const double  altitude_in_m,
-              const uint8_t volume,
-              const bool    is_loop_forever)
+void sendAPRS(const char*    call_sign_src,
+              const char*    call_sign_dst,
+              const char*    aprs_path_1,
+              const char*    aprs_path_2,
+              const char*    aprs_message,
+              const double   latitude_in_deg,
+              const double   longitude_in_deg,
+              const double   altitude_in_m,
+              const uint16_t volume,
+              const bool     is_loop_forever)
 {
   static AudioCallBackUserData_t callback_user_data;
 
