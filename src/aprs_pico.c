@@ -29,20 +29,20 @@
 
 typedef struct AudioCallBackUserData
 {
-  unsigned int aprs_sample_freq_in_hz;
-  bool         is_loop_forever;
-  uint16_t     volume; // Valid range: 0 ... 256
+  unsigned int aprs_sample_freq_in_hz; //
+  bool         is_loop_forever;        //
+  uint16_t     volume;                 // Valid range: 0 ... 256
 
 } AudioCallBackUserData_t;
 
 
 /** \brief Init function for the Pico audio PWM library
  *
- * \param sample_freq_in_hz   The sampling frequency to be used for audio signals
- * \param audio_buffer_format The format of the audio buffers to be created, representing
- *                            the data format of the audio samples
+ * \param[in] sample_freq_in_hz    The sampling frequency to be used for audio signals
+ * \param[in] audio_buffer_format  The format of the audio buffers to be created, representing
+ *                                 the data format of the audio samples
  *
- * \return                    A pool of audio buffers to be used for rendering an audio signal
+ * \return                         A pool of audio buffers to be used for rendering an audio signal
  */
 static audio_buffer_pool_t* init_audio(unsigned int sample_freq_in_hz, uint16_t audio_buffer_format)
 {
@@ -74,7 +74,7 @@ static audio_buffer_pool_t* init_audio(unsigned int sample_freq_in_hz, uint16_t 
 
 /** \brief Init function for the Pico's clock system and the Pico's standard library
  *
- * \param sample_freq_in_hz  The sampling frequency to be used for rendering audio signals
+ * \param[in] sample_freq_in_hz  The sampling frequency to be used for rendering audio signals
  */
 static void init_system(unsigned int sample_freq_in_hz)
 {
@@ -108,11 +108,11 @@ static void init_system(unsigned int sample_freq_in_hz)
 
 /** \brief Renders given PCM audio samples
  *
- * \param audio_pool       The pool of audio buffers to be used for rendering an audio signal
- * \param pcm_data         The PCM audio samples to be rendered
- * \param num_samples      The number of samples to be rendered
- * \param volume           The volume level of the generated AFSK signal (0 ... 256)
- * \param is_loop_forever  If 'true', the rendering of the audio samples will be continuously repeated
+ * \param[in, out] audio_pool       The pool of audio buffers to be used for rendering an audio signal
+ * \param[in]      pcm_data         The PCM audio samples to be rendered
+ * \param[in]      num_samples      The number of PCM audio samples to be rendered
+ * \param[in]      volume           The volume level of the generated AFSK signal (0 ... 256)
+ * \param[in]      is_loop_forever  If 'true', the rendering of the audio samples will be continuously repeated
  */
 static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t* pcm_data,
                                  unsigned int num_samples, uint16_t volume, bool is_loop_forever)
@@ -152,13 +152,13 @@ static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t*
 
 /** \brief The callback function to render the generated PCM audio samples of an APRS message
  *
- * \param callback_user_data  User data provided by the caller function of this callback
- * \param pcm_data            The PCM audio samples to be rendered
- * \param num_samples         The number of samples the PCM data consist of
+ * \param[in] callback_user_data  User data provided by the caller function of this callback
+ * \param[in] pcm_data            The PCM audio samples to be rendered
+ * \param[in] num_samples         The number of samples the PCM data consist of
  */
-static void sendAPRS_audioCallback(void* callback_user_data, int16_t* pcm_data, size_t num_samples)
+static void sendAPRS_audioCallback(const void* callback_user_data, const int16_t* pcm_data, size_t num_samples)
 {
-  const AudioCallBackUserData_t user_data = *((const AudioCallBackUserData_t*)callback_user_data);
+  const AudioCallBackUserData_t user_data = *((AudioCallBackUserData_t*)callback_user_data);
 
   audio_buffer_pool_t* audio_pool = init_audio(user_data.aprs_sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
 
@@ -167,7 +167,7 @@ static void sendAPRS_audioCallback(void* callback_user_data, int16_t* pcm_data, 
 
 
 // See the header file for documentation
-void send1kHz( unsigned int sample_freq_in_hz, uint16_t volume)
+void send1kHz(unsigned int sample_freq_in_hz, uint16_t volume)
 {
   init_system(sample_freq_in_hz);
 
@@ -195,16 +195,16 @@ void send1kHz( unsigned int sample_freq_in_hz, uint16_t volume)
 
 
 // See the header file for documentation
-void sendAPRS(const char*    call_sign_src,
-              const char*    call_sign_dst,
-              const char*    aprs_path_1,
-              const char*    aprs_path_2,
-              const char*    aprs_message,
-              const double   latitude_in_deg,
-              const double   longitude_in_deg,
-              const double   altitude_in_m,
-              const uint16_t volume,
-              const bool     is_loop_forever)
+void sendAPRS(const char* call_sign_src,
+              const char* call_sign_dst,
+              const char* aprs_path_1,
+              const char* aprs_path_2,
+              const char* aprs_message,
+              double      latitude_in_deg,
+              double      longitude_in_deg,
+              double      altitude_in_m,
+              uint16_t    volume,
+              bool        is_loop_forever)
 {
   static AudioCallBackUserData_t callback_user_data;
 
