@@ -3,7 +3,7 @@ A TX-only [TNC](https://en.wikipedia.org/wiki/Terminal_node_controller) (Termina
 
 An analog line-out audio signal will be generated at GPIO-pin 'GP0'. You can observe it by using a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
 
-<img src="https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/afsk_scope.png" width=660>
+<img src="https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/afsk_scope.png" width="660">
 
 Image: Pico's output signal probed by a DSO. We clearly see the 1200 Hz and 2200 Hz tones of the 1200 Bd 2-AFSK.
 
