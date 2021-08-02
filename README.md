@@ -27,7 +27,7 @@ Your host platform for cross-compilation is assumed to be LINUX.
 
 We just need a simple band-pass filter to extract the AFSK-signal from the PWM signal:
 
-![band-pass filter](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/schematic/band_pass_filter.png)
+![band-pass filter](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/band_pass_filter.png)
 
 ## Build the library and the example application
 
