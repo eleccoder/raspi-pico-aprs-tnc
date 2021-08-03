@@ -17,30 +17,40 @@
 */
 
 #include <aprs_pico.h>
+#include <pico/stdlib.h>
 
 #define SINE_WAVE_TEST (0) // For testing & debugging
 
 
+
 int main()
 {
+  stdio_init_all();
+
+  audio_buffer_pool_t* audio_buffer_pool = aprs_pico_init();
+
 #if (SINE_WAVE_TEST == 1)
 
   const uint16_t VOLUME = 128u;
-  send1kHz(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ, VOLUME);
+
+  aprs_pico_send1kHz(audio_buffer_pool, VOLUME);
 
 #else // !SINE_WAVE_TEST
 
-  // Send an APRS test message
-  sendAPRS("SRC",  // Src call sign
-           "DST",  // Dst call sign
-           "PATH1",
-           "PATH2",
-           "Test message",
-           10.0,   // Latitude in deg
-           20.0,   // Longitude in deg
-           100.0,  // Altitude in m
-           128u,   // Volume (0 ... 256)
-           true);  // Loop forever
+  while (true) // Loop forever
+    {
+      // Send an APRS test message
+      aprs_pico_sendAPRS(audio_buffer_pool,
+                         "SRC",          // Source call sign
+                         "DST",          // Destination call sign
+                         "PATH1",        // APRS path #1
+                         "PATH2",        // APRS path #2
+                         "Test message", // APRS message
+                         10.0,           // Latitude  (in deg)
+                         20.0,           // Longitude (in deg)
+                         100.0,          // Altitude  (in m)
+                         128u);          // Volume    (0 ... 256)
+    }
 
 #endif // SINE_WAVE_TEST, !SINE_WAVE_TEST
 

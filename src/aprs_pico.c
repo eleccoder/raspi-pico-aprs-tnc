@@ -19,19 +19,24 @@
 #include <aprs_pico.h>
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 
 #include <pico/stdlib.h>
-#include <pico/audio_pwm.h>
-
 #include <ax25beacon.h>
+
+
+// WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
+//          This is documented here: https://github.com/raspberrypi/pico-extras
+#define APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ  (22050)
+
 
 
 typedef struct AudioCallBackUserData
 {
-  unsigned int aprs_sample_freq_in_hz; //
-  bool         is_loop_forever;        //
-  uint16_t     volume;                 // Valid range: 0 ... 256
+  audio_buffer_pool_t* audio_buffer_pool;      // The pool of audio buffers to be used for rendering an audio signal
+  unsigned int         aprs_sample_freq_in_hz; // Sample rate of the APRS signal
+  uint16_t             volume;                 // Valid range: 0 ... 256
 
 } AudioCallBackUserData_t;
 
@@ -42,9 +47,9 @@ typedef struct AudioCallBackUserData
  * \param[in] audio_buffer_format  The format of the audio buffers to be created, representing
  *                                 the data format of the audio samples
  *
- * \return                         A pool of audio buffers to be used for rendering an audio signal
+ * \return                         A pool of audio buffers to be used for rendering any audio signal
  */
-static audio_buffer_pool_t* init_audio(unsigned int sample_freq_in_hz, uint16_t audio_buffer_format)
+static audio_buffer_pool_t* aprs_pico_initAudio(unsigned int sample_freq_in_hz, uint16_t audio_buffer_format)
 {
   const int NUM_AUDIO_BUFFERS  = 3;
   const int SAMPLES_PER_BUFFER = 256;
@@ -72,11 +77,11 @@ static audio_buffer_pool_t* init_audio(unsigned int sample_freq_in_hz, uint16_t 
 }
 
 
-/** \brief Init function for the Pico's clock system and the Pico's standard library
+/** \brief Init function for the Pico's clock system
  *
  * \param[in] sample_freq_in_hz  The sampling frequency to be used for rendering audio signals
  */
-static void init_system(unsigned int sample_freq_in_hz)
+static void aprs_pico_initClock(unsigned int sample_freq_in_hz)
 {
   // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
   //          This is documented here: https://github.com/raspberrypi/pico-extras
@@ -99,30 +104,32 @@ static void init_system(unsigned int sample_freq_in_hz)
       // Round to full Mhz to increase the chance that 'set_sys_clock_khz()' can exactly realize this frequency
       sys_clock_in_mhz = round(sys_clock_in_mhz);
 
-      set_sys_clock_khz(1000u * (uint32_t)sys_clock_in_mhz, false);
+      // With the second parameter set 'true', the function will assert if the frequency is not attainable
+      set_sys_clock_khz(1000u * (uint32_t)sys_clock_in_mhz, true);
     }
-
-  stdio_init_all();
 }
 
 
 /** \brief Renders given PCM audio samples
  *
- * \param[in, out] audio_pool       The pool of audio buffers to be used for rendering an audio signal
- * \param[in]      pcm_data         The PCM audio samples to be rendered
- * \param[in]      num_samples      The number of PCM audio samples to be rendered
- * \param[in]      volume           The volume level of the generated AFSK signal (0 ... 256)
- * \param[in]      is_loop_forever  If 'true', the rendering of the audio samples will be continuously repeated
+ * \param[in, out] audio_buffer_pool  The pool of audio buffers to be used for rendering any audio signal
+ * \param[in]      pcm_data           The PCM audio samples to be rendered
+ * \param[in]      num_samples        The number of PCM audio samples to be rendered
+ * \param[in]      volume             The volume level of the generated AFSK signal (0 ... 256)
+ * \param[in]      is_loop_forever    If 'true', the rendering of the audio samples will be continuously repeated
  */
-static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t* pcm_data,
-                                 unsigned int num_samples, uint16_t volume, bool is_loop_forever)
+static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool, const int16_t* pcm_data,
+                                         unsigned int num_samples, uint16_t volume, bool is_loop_forever)
 {
+  assert(audio_buffer_pool != NULL);
+  assert(pcm_data          != NULL);
+
   unsigned int pos   = 0u;
   bool is_keep_going = true;
 
   while (is_keep_going)
     {
-      audio_buffer_t* buffer  = take_audio_buffer(audio_pool, true);
+      audio_buffer_t* buffer  = take_audio_buffer(audio_buffer_pool, true);
       int16_t*        samples = (int16_t*)buffer->buffer->bytes;
 
       for (unsigned int i = 0u; i < buffer->max_sample_count; i++)
@@ -145,7 +152,7 @@ static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t*
         }
 
       buffer->sample_count = buffer->max_sample_count;
-      give_audio_buffer(audio_pool, buffer);
+      give_audio_buffer(audio_buffer_pool, buffer);
     }
 }
 
@@ -156,20 +163,34 @@ static void render_audio_samples(audio_buffer_pool_t* audio_pool, const int16_t*
  * \param[in] pcm_data            The PCM audio samples to be rendered
  * \param[in] num_samples         The number of samples the PCM data consist of
  */
-static void sendAPRS_audioCallback(const void* callback_user_data, const int16_t* pcm_data, size_t num_samples)
+static void aprs_pico_sendAPRSAudioCallback(const void* callback_user_data, const int16_t* pcm_data, size_t num_samples)
 {
+  assert(callback_user_data != NULL);
+  assert(pcm_data           != NULL);
+
   const AudioCallBackUserData_t user_data = *((AudioCallBackUserData_t*)callback_user_data);
 
-  audio_buffer_pool_t* audio_pool = init_audio(user_data.aprs_sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
-
-  render_audio_samples(audio_pool, pcm_data, num_samples, user_data.volume, user_data.is_loop_forever);
+  aprs_pico_renderAudioSamples(user_data.audio_buffer_pool, pcm_data, num_samples, user_data.volume, false);
 }
 
 
 // See the header file for documentation
-void send1kHz(unsigned int sample_freq_in_hz, uint16_t volume)
+audio_buffer_pool_t* aprs_pico_init()
 {
-  init_system(sample_freq_in_hz);
+  return aprs_pico_initAudio(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ, AUDIO_BUFFER_FORMAT_PCM_S16);
+}
+
+
+// See the header file for documentation
+void aprs_pico_send1kHz(audio_buffer_pool_t* audio_buffer_pool, uint16_t volume)
+{
+  assert(audio_buffer_pool != NULL);
+
+  // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
+  //          This is documented here: https://github.com/raspberrypi/pico-extras
+  unsigned int sample_freq_in_hz = APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
+
+  aprs_pico_initClock(sample_freq_in_hz);
 
   const unsigned int TONE_FREQ_IN_HZ = 1000u;
   const unsigned int num_samples     = sample_freq_in_hz / TONE_FREQ_IN_HZ;
@@ -186,36 +207,41 @@ void send1kHz(unsigned int sample_freq_in_hz, uint16_t volume)
       sine_wave_table[i] = (int16_t)(32767.0f * sinf(2.0f * (float)M_PI * (float)i / (float)num_samples));
     }
 
-  audio_buffer_pool_t* audio_pool = init_audio(sample_freq_in_hz, AUDIO_BUFFER_FORMAT_PCM_S16);
-
-  render_audio_samples(audio_pool, sine_wave_table, num_samples, volume, true);
+  aprs_pico_renderAudioSamples(audio_buffer_pool, sine_wave_table, num_samples, volume, true);
 
   free(sine_wave_table);
 }
 
 
 // See the header file for documentation
-void sendAPRS(const char* call_sign_src,
-              const char* call_sign_dst,
-              const char* aprs_path_1,
-              const char* aprs_path_2,
-              const char* aprs_message,
-              double      latitude_in_deg,
-              double      longitude_in_deg,
-              double      altitude_in_m,
-              uint16_t    volume,
-              bool        is_loop_forever)
+void aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
+                        const char*          call_sign_src,
+                        const char*          call_sign_dst,
+                        const char*          aprs_path_1,
+                        const char*          aprs_path_2,
+                        const char*          aprs_message,
+                        double               latitude_in_deg,
+                        double               longitude_in_deg,
+                        double               altitude_in_m,
+                        uint16_t             volume)
 {
+  // NOTE: 'aprs_message' is allowed to be 'NULL'
+  assert(audio_buffer_pool != NULL);
+  assert(call_sign_src     != NULL);
+  assert(call_sign_dst     != NULL);
+  assert(aprs_path_1       != NULL);
+  assert(aprs_path_2       != NULL);
+
   static AudioCallBackUserData_t callback_user_data;
 
   callback_user_data.aprs_sample_freq_in_hz = 48000u; // Known from the 'ax25beacon' library
-  callback_user_data.is_loop_forever        = is_loop_forever;
+  callback_user_data.audio_buffer_pool      = audio_buffer_pool;
   callback_user_data.volume                 = volume;
 
-  init_system(callback_user_data.aprs_sample_freq_in_hz);
+  aprs_pico_initClock(callback_user_data.aprs_sample_freq_in_hz);
 
   ax25_beacon((void*)&callback_user_data,
-              sendAPRS_audioCallback,
+              aprs_pico_sendAPRSAudioCallback,
               call_sign_src,
               call_sign_dst,
               aprs_path_1,
