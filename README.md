@@ -1,3 +1,5 @@
+https://img.shields.io/github/last-commit/eleccoder/raspi-pico-aprs-tnc
+
 # raspi-pico-aprs-tnc
 A TX-only [TNC](https://en.wikipedia.org/wiki/Terminal_node_controller) (Terminal Network Controller) to generate the [AFSK](https://en.wikipedia.org/wiki/Frequency-shift_keying#Audio_FSK) audio tones for [APRS](https://en.wikipedia.org/wiki/Automatic_Packet_Reporting_System) (Automatic Packet Reporting System) messages using a [Raspberry Pi Pico](https://en.wikipedia.org/wiki/Raspberry_Pi) microcontroller board.
 
