@@ -36,7 +36,8 @@ The line-out voltage can be as high as 2.7 V<sub>pp</sub> (~1 V<sub>rms</sub>) (
 ## Build the library and the example application
 
 ```
-(cd into the cloned dir)
+git clone https://github.com/eleccoder/raspi-pico-aprs-tnc.git
+cd raspi-pico-aprs-tnc
 cmake -S . -B build
 cmake --build build
 ```
