@@ -19,7 +19,6 @@
 #include <aprs_pico.h>
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <math.h>
 
 #include <pico/stdlib.h>
@@ -29,7 +28,7 @@
 // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
 //          This is documented here: https://github.com/raspberrypi/pico-extras
 #define APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ  (22050)
-
+#define APRS_PICO__SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ (48)
 
 
 typedef struct AudioCallBackUserData
@@ -86,22 +85,15 @@ static void aprs_pico_initClock(unsigned int sample_freq_in_hz)
   // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
   //          This is documented here: https://github.com/raspberrypi/pico-extras
 
-  if (sample_freq_in_hz == APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ)
+  // Compensate a non-'PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
+  // by a adapting the system clock accordingly
+
+  float sys_clock_in_mhz = (float)APRS_PICO__SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ *
+                           ((float)sample_freq_in_hz / (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ);
+
+  if (!set_sys_clock_khz((uint32_t)(1000.0f * sys_clock_in_mhz), false))
     {
-      // This is the safe case, see the comment above
-      set_sys_clock_48mhz();
-    }
-  else
-    {
-      // Compensate a non-'PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
-      // by a adapting the system clock accordingly
-
-      const float SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ = 48.0f;
-
-      float sys_clock_in_mhz = SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ * (float)sample_freq_in_hz /
-                               (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
-
-      // Round to full Mhz to increase the chance that 'set_sys_clock_khz()' can exactly realize this frequency
+      // Round to full MHz to increase the chance that 'set_sys_clock_khz()' can exactly attain this frequency
       sys_clock_in_mhz = round(sys_clock_in_mhz);
 
       // With the second parameter set 'true', the function will assert if the frequency is not attainable
@@ -177,7 +169,9 @@ static void aprs_pico_sendAPRSAudioCallback(const void* callback_user_data, cons
 // See the header file for documentation
 audio_buffer_pool_t* aprs_pico_init()
 {
-  return aprs_pico_initAudio(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ, AUDIO_BUFFER_FORMAT_PCM_S16);
+  audio_buffer_pool_t* audio_buffer_pool = aprs_pico_initAudio(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ,
+                                                               AUDIO_BUFFER_FORMAT_PCM_S16);
+  return audio_buffer_pool;
 }
 
 
@@ -214,7 +208,7 @@ void aprs_pico_send1kHz(audio_buffer_pool_t* audio_buffer_pool, uint16_t volume)
 
 
 // See the header file for documentation
-void aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
+bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                         const char*          call_sign_src,
                         const char*          call_sign_dst,
                         const char*          aprs_path_1,
@@ -240,15 +234,17 @@ void aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
 
   aprs_pico_initClock(callback_user_data.aprs_sample_freq_in_hz);
 
-  ax25_beacon((void*)&callback_user_data,
-              aprs_pico_sendAPRSAudioCallback,
-              call_sign_src,
-              call_sign_dst,
-              aprs_path_1,
-              aprs_path_2,
-              latitude_in_deg,
-              longitude_in_deg,
-              altitude_in_m,
-              aprs_message,
-              '/', 'O');
+  int ret_val = ax25_beacon((void*)&callback_user_data,
+                            aprs_pico_sendAPRSAudioCallback,
+                            call_sign_src,
+                            call_sign_dst,
+                            aprs_path_1,
+                            aprs_path_2,
+                            latitude_in_deg,
+                            longitude_in_deg,
+                            altitude_in_m,
+                            aprs_message,
+                            '/', 'O');
+
+  return ret_val == AX25_OK;
 }
