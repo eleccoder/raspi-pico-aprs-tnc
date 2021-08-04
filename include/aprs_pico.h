@@ -20,9 +20,9 @@
 #define APRS_PICO_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <pico/audio_pwm.h> // For 'audio_buffer_pool_t'
-
 
 
 /** \brief Initializes the APRS Pico library
@@ -44,8 +44,12 @@ audio_buffer_pool_t* aprs_pico_init();
  * \param[in]      longitude_in_deg   The longitude of the geo-location (in degrees)
  * \param[in]      altitude_in_m      The altitude  of the geo-location (in meters)
  * \param[in]      volume             The volume level of the generated AFSK signal (0 ... 256)
+ *
+ * \retval         'true'  - Successful operation
+ * \retval         'false' - An error occurred
+ *
  */
-void aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
+bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                         const char*          call_sign_src,
                         const char*          call_sign_dst,
                         const char*          aprs_path_1,
