@@ -24,6 +24,12 @@ Your host platform for cross-compilation is assumed to be LINUX.
 
 1. Install the Pico-SDK following the instructions given in the [Raspberry Pi 'Getting Started' Guide](https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf) (pdf)
 1. Set the `PICO_SDK_PATH` environment variable to point to your Pico-SDK installation directory
+1. Install the [pico-extras](https://github.com/raspberrypi/pico-extras) libraries:
+
+```
+  cd $PICO_SDK_PATH/..
+  git clone -b master https://github.com/raspberrypi/pico-extras.git
+```
 
 ## Hardware
 
@@ -53,7 +59,7 @@ cd build
 
 The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
 
-## TODO (Aug 2021)
+## TODO (Sept. 2021)
 
 - [x] Thorough evaluation, in general
 - [x] Send the APRS message on the console (USB or UART) rather than hard-coding
@@ -63,4 +69,4 @@ The analog AFSK audio signal will be available at the filter's line-out. You can
 ## Ingredients / Acknowledgements
 
 - For APRS => AX.25 => PCM conversion I'm using [my modified version](https://github.com/eleccoder/ax25-aprs-lib) of [fsphil's ax25beacon](https://github.com/fsphil/ax25beacon)
-- For PCM => PWM conversion I'm using the audio lib from [pico-extras](https://github.com/raspberrypi/pico-extras) (WARNING: maturity seems to be alpha/beta)
+- For PCM => PWM conversion I'm using the `pico_audio_pwm` library from [pico-extras](https://github.com/raspberrypi/pico-extras) (NOTE: ATTOW, maturity seems to be rather alpha/beta)
