@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 
-# (1) Setup of eleccoder's 'ax25-aprs-lib'
+# (1) Setup of eleccoder's version of Philip Heron's 'ax25beacon' project
 
 include(FetchContent)
 FetchContent_Declare(ax25_aprs_lib
