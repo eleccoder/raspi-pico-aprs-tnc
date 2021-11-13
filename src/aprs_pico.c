@@ -86,7 +86,7 @@ static void aprs_pico_initClock(unsigned int sample_freq_in_hz)
   //          This is documented here: https://github.com/raspberrypi/pico-extras
 
   // Compensate a non-'PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
-  // by a adapting the system clock accordingly
+  // by adapting the system clock accordingly
 
   float sys_clock_in_mhz = (float)APRS_PICO__SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ *
                            ((float)sample_freq_in_hz / (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ);
