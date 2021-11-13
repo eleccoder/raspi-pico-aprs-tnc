@@ -32,7 +32,7 @@
 audio_buffer_pool_t* aprs_pico_init();
 
 
-/** \brief Generates the analog AFSK signal for a given APRS message at GPIO-pin 'GP0'
+/** \brief Generates the AFSK PWM-signal for a given APRS message at GPIO-pin 'GP0'
  *
  * \param[in, out] audio_buffer_pool  The pool of audio buffers to be used for rendering the APRS audio signal
  * \param[in]      call_sign_src      The source      call sign
@@ -43,7 +43,7 @@ audio_buffer_pool_t* aprs_pico_init();
  * \param[in]      latitude_in_deg    The latitude  of the geo-location (in degrees)
  * \param[in]      longitude_in_deg   The longitude of the geo-location (in degrees)
  * \param[in]      altitude_in_m      The altitude  of the geo-location (in meters)
- * \param[in]      volume             The volume level of the generated AFSK signal (0 ... 256)
+ * \param[in]      volume             The volume level of the generated signal (0 ... 256)
  *
  * \retval         'true'  - Successful operation
  * \retval         'false' - An error occurred
@@ -61,10 +61,10 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                         uint16_t             volume);
 
 
-/** \brief Generates a 1 KHz sine wave signal at GPIO-pin 'GP0'
+/** \brief Generates a 1 KHz sine wave PWM-signal at GPIO-pin 'GP0'
  *
  * \param[in, out] audio_buffer_pool  The pool of audio buffers to be used for rendering the sine audio signal
- * \param[in]      volume             The volume level of the generated AFSK signal (0 ... 256)
+ * \param[in]      volume             The volume level of the generated signal (0 ... 256)
  */
 void aprs_pico_send1kHz(audio_buffer_pool_t* audio_buffer_pool, uint16_t volume);
 
