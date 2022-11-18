@@ -29,6 +29,8 @@ Your host platform for cross-compilation is assumed to be LINUX.
 ```
   cd $PICO_SDK_PATH/..
   git clone -b master https://github.com/raspberrypi/pico-extras.git
+  cd pico-extras
+  git submodule update --init
 ```
 
 ## Hardware
