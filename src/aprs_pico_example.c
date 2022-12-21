@@ -38,19 +38,23 @@ int main()
 
 #else // !SINE_WAVE_TEST
 
+  double alt_in_m = 0.0f;
+
   while (true) // Loop forever
     {
       // Send an APRS test message
       aprs_pico_sendAPRS(audio_buffer_pool,
-                         "SRC",          // Source call sign
-                         "DST",          // Destination call sign
-                         "PATH1",        // APRS path #1
-                         "PATH2",        // APRS path #2
-                         "Test message", // APRS message
-                         10.0,           // Latitude  (in deg)
-                         20.0,           // Longitude (in deg)
-                         100.0,          // Altitude  (in m)
-                         128u);          // Volume    (0 ... 256)
+                         "DL3TG",  // Source call sign
+                         "DL3TG",  // Destination call sign
+                         "PATH1",  // APRS path #1
+                         "PATH2",  // APRS path #2
+                         "APRS by RPi-Pico - https://github.com/eleccoder/raspi-pico-aprs-tnc", // APRS message
+                         10.0,     // Latitude  (in deg)
+                         20.0,     // Longitude (in deg)
+                         alt_in_m, // Altitude  (in m)
+                         128u);    // Volume    (0 ... 256)
+
+      alt_in_m = (alt_in_m < 1000.0) ? alt_in_m + 100.0 : 0.0;
     }
 
 #endif // SINE_WAVE_TEST, !SINE_WAVE_TEST
