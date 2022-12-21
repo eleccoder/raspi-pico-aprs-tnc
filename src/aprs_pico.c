@@ -116,19 +116,23 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
   assert(audio_buffer_pool != NULL);
   assert(pcm_data          != NULL);
 
-  unsigned int idx_src       = 0u;
-  bool         is_keep_going = true;
+  unsigned int idx_src                  = 0u;
+  bool         is_all_samples_processed = num_samples == 0u;
 
-  // Write the PCM sample data into the audio buffer(s) while applying the 'volume' value
-  while (is_keep_going)
+  // Write the PCM sample data into the next audio buffer while applying the 'volume' value
+  while (!is_all_samples_processed)
     {
       audio_buffer_t* audio_buffer          = take_audio_buffer(audio_buffer_pool, true);
       int16_t*        audio_buffer_pcm_data = (int16_t*)audio_buffer->buffer->bytes;
 
-      for (unsigned int idx_dst = 0u; idx_dst < audio_buffer->max_sample_count; idx_dst++)
+      unsigned int idx_dst = 0u;
+
+      while (!is_all_samples_processed && (idx_dst < audio_buffer->max_sample_count))
         {
           audio_buffer_pcm_data[idx_dst] = ((int32_t)volume * (int32_t)pcm_data[idx_src]) >> 8u;
+
           idx_src++;
+          idx_dst++;
 
           if (idx_src == num_samples)
             {
@@ -138,13 +142,15 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
                 }
               else
                 {
-                  is_keep_going = false;
-                  break;
+                  is_all_samples_processed = true;
                 }
             }
         }
 
-      audio_buffer->sample_count = audio_buffer->max_sample_count;
+      assert(idx_src <= num_samples);
+      assert(idx_dst <= audio_buffer->max_sample_count);
+
+      audio_buffer->sample_count = idx_dst;
       give_audio_buffer(audio_buffer_pool, audio_buffer);
     }
 }
