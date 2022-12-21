@@ -6,7 +6,6 @@ include(cmake/pico_extras_import.cmake) # File copied from $PICO_SDK_PATH/../pic
 project(raspi-pico-aprs-tnc VERSION 0.1)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
