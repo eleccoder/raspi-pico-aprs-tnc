@@ -54,7 +54,7 @@ cmake --build build
 
 ```
 cd build
-(flash 'aprs_pico_example.uf2' or 'aprs_pico_example.elf' to the Pico board as usual)
+Flash 'aprs_pico_example[.uf2|.elf|.bin]' to the Pico board as usual
 ```
 
 The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
