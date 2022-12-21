@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 
-# (1) Setup of eleccoder's version of Philip Heron's 'ax25beacon' project
+# Setup of eleccoder's version of Philip Heron's 'ax25beacon' project
 
 include(FetchContent)
 FetchContent_Declare(ax25_aprs_lib
@@ -24,7 +24,7 @@ FetchContent_MakeAvailable(ax25_aprs_lib)
 add_library(ax25_aprs_lib::ax25beacon ALIAS ax25beacon)
 
 
-# (2) Configure the library build
+# ##### Configure the build of the 'aprs_pico' library #####
 
 set(TARGET_LIB_NAME aprs_pico)
 
@@ -43,7 +43,6 @@ target_include_directories(${TARGET_LIB_NAME} PUBLIC
 # Enable on demand
 #target_compile_options(${TARGET_LIB_NAME} PRIVATE "-Wundef;-Wall")
 
-# This properly resolves the include dirs of the dependent libraries
 target_link_libraries(${TARGET_LIB_NAME}
     ax25_aprs_lib::ax25beacon
     pico_audio_pwm        
@@ -51,7 +50,7 @@ target_link_libraries(${TARGET_LIB_NAME}
 )
 
 
-# (3) Configure the example application build
+# ##### Configure the build of the example application #####
 
 set(TARGET_EXAMPLE_EXE_NAME aprs_pico_example)
 
@@ -63,11 +62,11 @@ target_include_directories(${TARGET_EXAMPLE_EXE_NAME} PRIVATE
   include
 )
 
-# Set the console interface
+# Configure the console interface
 pico_enable_stdio_usb(${TARGET_EXAMPLE_EXE_NAME} 1) # USB
 #pico_enable_stdio_uart(${TARGET_EXAMPLE_EXE_NAME} 1) # UART
 
-# create map/bin/hex file etc.
+# Create map/bin/hex file etc.
 pico_add_extra_outputs(${TARGET_EXAMPLE_EXE_NAME})
 
 target_link_libraries(${TARGET_EXAMPLE_EXE_NAME}
