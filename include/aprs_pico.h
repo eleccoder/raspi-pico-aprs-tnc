@@ -61,11 +61,12 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                         uint16_t             volume);
 
 
-/** \brief Generates a 1 KHz sine wave PWM-signal at GPIO-pin 'GP0'
+/** \brief Generates a sine wave PWM-signal at GPIO-pin 'GP0'
  *
  * \param[in, out] audio_buffer_pool  The pool of audio buffers to be used for rendering the sine audio signal
+ * \param[in]      freq_in_hz         The frequency of the sine wave to be generated (in Hz)
  * \param[in]      volume             The volume level of the generated signal (0 ... 256)
  */
-void aprs_pico_send1kHz(audio_buffer_pool_t* audio_buffer_pool, uint16_t volume);
+void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, uint16_t volume);
 
 #endif // APRS_PICO_H
