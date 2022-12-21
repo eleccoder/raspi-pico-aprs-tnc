@@ -108,7 +108,7 @@ static void aprs_pico_initClock(unsigned int sample_freq_in_hz)
  * \param[in]      pcm_data           The PCM audio samples to be rendered
  * \param[in]      num_samples        The number of PCM audio samples to be rendered
  * \param[in]      volume             The volume level of the generated AFSK signal (0 ... 256)
- * \param[in]      is_loop_forever    If 'true', the rendering of the audio samples will be continuously repeated
+ * \param[in]      is_loop_forever    If 'true', rendering of the audio samples will be continuously repeated
  */
 static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool, const int16_t* pcm_data,
                                          unsigned int num_samples, uint16_t volume, bool is_loop_forever)
@@ -116,24 +116,25 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
   assert(audio_buffer_pool != NULL);
   assert(pcm_data          != NULL);
 
-  unsigned int pos   = 0u;
-  bool is_keep_going = true;
+  unsigned int idx_src       = 0u;
+  bool         is_keep_going = true;
 
+  // Write the PCM sample data into the audio buffer(s) while applying the 'volume' value
   while (is_keep_going)
     {
-      audio_buffer_t* buffer  = take_audio_buffer(audio_buffer_pool, true);
-      int16_t*        samples = (int16_t*)buffer->buffer->bytes;
+      audio_buffer_t* audio_buffer          = take_audio_buffer(audio_buffer_pool, true);
+      int16_t*        audio_buffer_pcm_data = (int16_t*)audio_buffer->buffer->bytes;
 
-      for (unsigned int i = 0u; i < buffer->max_sample_count; i++)
+      for (unsigned int idx_dst = 0u; idx_dst < audio_buffer->max_sample_count; idx_dst++)
         {
-          samples[i] = ((int32_t)volume * (int32_t)pcm_data[pos]) >> 8u;
-          pos++;
+          audio_buffer_pcm_data[idx_dst] = ((int32_t)volume * (int32_t)pcm_data[idx_src]) >> 8u;
+          idx_src++;
 
-          if (pos == num_samples)
+          if (idx_src == num_samples)
             {
               if (is_loop_forever)
                 {
-                  pos = 0u;
+                  idx_src = 0u;
                 }
               else
                 {
@@ -143,8 +144,8 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
             }
         }
 
-      buffer->sample_count = buffer->max_sample_count;
-      give_audio_buffer(audio_buffer_pool, buffer);
+      audio_buffer->sample_count = audio_buffer->max_sample_count;
+      give_audio_buffer(audio_buffer_pool, audio_buffer);
     }
 }
 
@@ -176,34 +177,36 @@ audio_buffer_pool_t* aprs_pico_init()
 
 
 // See the header file for documentation
-void aprs_pico_send1kHz(audio_buffer_pool_t* audio_buffer_pool, uint16_t volume)
+void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, uint16_t volume)
 {
   assert(audio_buffer_pool != NULL);
 
   // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
   //          This is documented here: https://github.com/raspberrypi/pico-extras
-  unsigned int sample_freq_in_hz = APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
+  const unsigned int SAMPLE_FREQ_IN_HZ      = APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
+  const unsigned int num_samples_per_period = SAMPLE_FREQ_IN_HZ / freq_in_hz;
 
-  aprs_pico_initClock(sample_freq_in_hz);
+  typedef int16_t wave_table_value_t;
+  const wave_table_value_t WAVE_TABLE_VALUE_MAX = INT16_MAX;
 
-  const unsigned int TONE_FREQ_IN_HZ = 1000u;
-  const unsigned int num_samples     = sample_freq_in_hz / TONE_FREQ_IN_HZ;
 
-  int16_t* sine_wave_table = malloc(num_samples * sizeof(int16_t));
+  aprs_pico_initClock(SAMPLE_FREQ_IN_HZ);
 
-  if (!sine_wave_table)
+  wave_table_value_t* sine_period_wave_table = malloc(num_samples_per_period * sizeof(wave_table_value_t));
+
+  if (sine_period_wave_table == NULL)
     {
       panic("Out of memory: malloc() failed.\n");
     }
 
-  for (unsigned int i = 0u; i < num_samples; i++)
+  for (unsigned int i = 0u; i < num_samples_per_period; i++)
     {
-      sine_wave_table[i] = (int16_t)(32767.0f * sinf(2.0f * (float)M_PI * (float)i / (float)num_samples));
+      sine_period_wave_table[i] = (wave_table_value_t)((float)WAVE_TABLE_VALUE_MAX * sinf(2.0f * (float)M_PI * (float)i / (float)num_samples_per_period));
     }
 
-  aprs_pico_renderAudioSamples(audio_buffer_pool, sine_wave_table, num_samples, volume, true);
+  aprs_pico_renderAudioSamples(audio_buffer_pool, sine_period_wave_table, num_samples_per_period, volume, true);
 
-  free(sine_wave_table);
+  free(sine_period_wave_table);
 }
 
 
