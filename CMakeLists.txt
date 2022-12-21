@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
-include(cmake/pico_sdk_import.cmake)    # File copied from $PICO_SDK_PATH/pico-sdk/external
-include(cmake/pico_extras_import.cmake) # File copied from $PICO_SDK_PATH/pico-extras/external
+include(cmake/pico_sdk_import.cmake)    # File copied from $PICO_SDK_PATH/external
+include(cmake/pico_extras_import.cmake) # File copied from $PICO_SDK_PATH/../pico-extras/external
 
 project(raspi-pico-aprs-tnc VERSION 0.1)
 
