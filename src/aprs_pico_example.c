@@ -31,10 +31,11 @@ int main()
 
 #if (SINE_WAVE_TEST == 1)
 
-  const unsigned int FREQ_IN_HZ = 1000u;
-  const uint16_t     VOLUME     = 128u;
+  const unsigned int FREQ_IN_HZ        = 1000u;
+  const unsigned int SAMPLE_FREQ_IN_HZ = 48000u;
+  const uint16_t     VOLUME            = 128u;
 
-  aprs_pico_send_sine_wave(audio_buffer_pool, FREQ_IN_HZ, VOLUME);
+  aprs_pico_send_sine_wave(audio_buffer_pool, FREQ_IN_HZ, SAMPLE_FREQ_IN_HZ, VOLUME);
 
 #else // !SINE_WAVE_TEST
 

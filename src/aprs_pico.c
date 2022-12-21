@@ -183,20 +183,17 @@ audio_buffer_pool_t* aprs_pico_init()
 
 
 // See the header file for documentation
-void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, uint16_t volume)
+void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, unsigned int sample_freq_in_hz, uint16_t volume)
 {
   assert(audio_buffer_pool != NULL);
-
-  // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
-  //          This is documented here: https://github.com/raspberrypi/pico-extras
-  const unsigned int SAMPLE_FREQ_IN_HZ      = APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ;
-  const unsigned int num_samples_per_period = SAMPLE_FREQ_IN_HZ / freq_in_hz;
 
   typedef int16_t wave_table_value_t;
   const wave_table_value_t WAVE_TABLE_VALUE_MAX = INT16_MAX;
 
 
-  aprs_pico_initClock(SAMPLE_FREQ_IN_HZ);
+  aprs_pico_initClock(sample_freq_in_hz);
+
+  const unsigned int num_samples_per_period = sample_freq_in_hz / freq_in_hz;
 
   wave_table_value_t* sine_period_wave_table = malloc(num_samples_per_period * sizeof(wave_table_value_t));
 
