@@ -48,7 +48,7 @@ cmake -S . -B build
 cmake --build build
 ```
 
-`build/lib/libaprs_pico.a` and `build/aprs_pico_example.uf2|.elf|.xxx` will be generated.
+`build/lib/libaprs_pico.a` and `build/aprs_pico_example[.uf2|.elf|.bin]` will be generated.
 
 ## Run the example application
 
@@ -59,12 +59,38 @@ Flash 'aprs_pico_example[.uf2|.elf|.bin]' to the Pico board as usual
 
 The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
 
-## TODO (Sept. 2021)
+## Test the example application using *Dire Wolf* (on LINUX)
 
-- [x] Thorough evaluation, in general
+We can use the famous [Dire Wolf](https://github.com/wb2osz/direwolf) CLI software to decode the APRS data after sampling our APRS audio signal by means of a soundcard.
+
+1. Connect the line-out of our circuit above to the microphone input of your soundcard of your (ALSA-supported) LINUX system.
+2. Check if you can hear the typical APRS 'modem-sound' on your audio output device by monitoring the input signal:
+
+```
+arecord -f cd -c 1 -t raw - | aplay -f cd -c 1 -t raw
+```
+
+3. Install [Dire Wolf](https://github.com/wb2osz/direwolf) on your system. Probably, you just have to run:
+
+```
+sudo apt install direwolf
+```
+
+4. Let's sample the APRS audio signal fed to the soundcard and forward the audio stream to *Dire Wolf*:
+
+```
+arecord -f cd -c 1 -t raw - | direwolf
+```
+
+5. Enjoy the decoded APRS message:
+
+![Decoded APRS message by Dire Wolf](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/direwolf_decoding.png)
+
+## TODO (Dec. 2022)
+
 - [x] Send the APRS message on the console (USB or UART) rather than hard-coding
-- [x] Show how to physically connect to a Baofeng HT
 - [x] PTT control for RF transceivers
+- [x] Show how to physically connect to a Baofeng HT
 
 ## Ingredients / Acknowledgements
 
