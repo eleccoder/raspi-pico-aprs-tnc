@@ -13,22 +13,21 @@
 * GNU General Public License for more details.
 
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <aprs_pico.h>
+#include "aprs_pico.h"
 
-#include <stdio.h>
+#include "ax25beacon.h"
+#include "pico/stdlib.h"
+
 #include <math.h>
 
-#include <pico/stdlib.h>
-#include <ax25beacon.h>
 
-
-// WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
-//          This is documented here: https://github.com/raspberrypi/pico-extras
-#define APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ  (22050)
-#define APRS_PICO__SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ (48)
+// NOTE: ATTOW, the pico-extra audio PWM lib worked only at a fixed 22050 Hz sampling frequency, while the
+//       system clock runs at 48 MHz. This is documented here: https://github.com/raspberrypi/pico-extras
+#define APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB__FIXED_SAMPLE_FREQ_IN_HZ  (22050)
+#define APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB__SYS_CLOCK_FREQ_OF_IN_MHZ (48)
 
 
 typedef struct AudioCallBackUserData
@@ -81,14 +80,14 @@ static audio_buffer_pool_t* aprs_pico_initAudio(unsigned int sample_freq_in_hz, 
  */
 static void aprs_pico_initClock(unsigned int sample_freq_in_hz)
 {
-  // WARNING: ATTOW, the pico audio PWM lib worked only @ 22050 Hz sampling frequency and 48 MHz system clock
-  //          This is documented here: https://github.com/raspberrypi/pico-extras
+  // NOTE: ATTOW, the pico-extra audio PWM lib worked only at a fixed 22050 Hz sampling frequency, while the
+  //       system clock runs at 48 MHz. This is documented here: https://github.com/raspberrypi/pico-extras
 
-  // Compensate a non-'PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
-  // by adapting the system clock accordingly
+  // Compensate a non-'APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB__FIXED_SAMPLE_FREQ_IN_HZ' sampling frequency
+  // by adapting the system clock frequency accordingly.
 
-  float sys_clock_in_mhz = (float)APRS_PICO__SYS_CLOCK_FREQ_OF_PICO_EXTRA_AUDIO_PWM_LIB_IN_MHZ *
-                           ((float)sample_freq_in_hz / (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ);
+  float sys_clock_in_mhz = (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB__SYS_CLOCK_FREQ_OF_IN_MHZ *
+                           ((float)sample_freq_in_hz / (float)APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB__FIXED_SAMPLE_FREQ_IN_HZ);
 
   if (!set_sys_clock_khz((uint32_t)(1000.0f * sys_clock_in_mhz), false))
     {
@@ -177,7 +176,7 @@ static void aprs_pico_sendAPRSAudioCallback(const void* callback_user_data, cons
 // See the header file for documentation
 audio_buffer_pool_t* aprs_pico_init()
 {
-  audio_buffer_pool_t* audio_buffer_pool = aprs_pico_initAudio(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB_FIXED_SAMPLE_FREQ_IN_HZ,
+  audio_buffer_pool_t* audio_buffer_pool = aprs_pico_initAudio(APRS_PICO__PICO_EXTRA_AUDIO_PWM_LIB__FIXED_SAMPLE_FREQ_IN_HZ,
                                                                AUDIO_BUFFER_FORMAT_PCM_S16);
   return audio_buffer_pool;
 }

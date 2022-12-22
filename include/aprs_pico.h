@@ -13,16 +13,15 @@
 * GNU General Public License for more details.
 
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef APRS_PICO_H
-#define APRS_PICO_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <pico/audio_pwm.h> // For 'audio_buffer_pool_t'
+#include "pico/audio_pwm.h" // For 'audio_buffer_pool_t'
 
 
 /** \brief Initializes the APRS Pico library
@@ -69,5 +68,3 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
  * \param[in]      volume             The volume level of the generated signal (0 ... 256)
  */
 void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, unsigned int sample_freq_in_hz, uint16_t volume);
-
-#endif // APRS_PICO_H
