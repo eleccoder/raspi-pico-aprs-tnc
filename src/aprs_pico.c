@@ -34,7 +34,6 @@
 typedef struct AudioCallBackUserData
 {
   audio_buffer_pool_t* audio_buffer_pool;      // The pool of audio buffers to be used for rendering an audio signal
-  unsigned int         aprs_sample_freq_in_hz; // Sample rate of the APRS signal
   uint16_t             volume;                 // Valid range: 0 ... 256
 
 } AudioCallBackUserData_t;
@@ -161,14 +160,16 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
  * \param[in] callback_user_data  User data provided by the caller function of this callback
  * \param[in] pcm_data            The PCM audio samples to be rendered
  * \param[in] num_samples         The number of samples the PCM data consist of
+ * \param[in] sample_freq_in_hz   The sample frequency of the PCM data (in Hz)
  */
-static void aprs_pico_sendAPRSAudioCallback(const void* callback_user_data, const int16_t* pcm_data, size_t num_samples)
+static void aprs_pico_sendAPRSAudioCallback(const void* callback_user_data, const int16_t* pcm_data, size_t num_samples, uint16_t sample_freq_in_hz)
 {
   assert(callback_user_data != NULL);
   assert(pcm_data           != NULL);
 
   const AudioCallBackUserData_t user_data = *((AudioCallBackUserData_t*)callback_user_data);
 
+  aprs_pico_initClock(sample_freq_in_hz);
   aprs_pico_renderAudioSamples(user_data.audio_buffer_pool, pcm_data, num_samples, user_data.volume, false);
 }
 
@@ -234,11 +235,8 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
 
   static AudioCallBackUserData_t callback_user_data;
 
-  callback_user_data.aprs_sample_freq_in_hz = 48000u; // Known from the 'ax25beacon' library
-  callback_user_data.audio_buffer_pool      = audio_buffer_pool;
-  callback_user_data.volume                 = volume;
-
-  aprs_pico_initClock(callback_user_data.aprs_sample_freq_in_hz);
+  callback_user_data.audio_buffer_pool = audio_buffer_pool;
+  callback_user_data.volume            = volume;
 
   int ret_val = ax25_beacon((void*)&callback_user_data,
                             aprs_pico_sendAPRSAudioCallback,
