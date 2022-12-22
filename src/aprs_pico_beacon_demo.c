@@ -13,14 +13,11 @@
 * GNU General Public License for more details.
 
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <aprs_pico.h>
-#include <pico/stdlib.h>
-
-#define SINE_WAVE_TEST (0) // For testing & debugging
-
+#include "aprs_pico.h"
+#include "pico/stdlib.h"
 
 
 int main()
@@ -29,17 +26,8 @@ int main()
 
   audio_buffer_pool_t* audio_buffer_pool = aprs_pico_init();
 
-#if (SINE_WAVE_TEST == 1)
-
-  const unsigned int FREQ_IN_HZ        = 1000u;
-  const unsigned int SAMPLE_FREQ_IN_HZ = 48000u;
-  const uint16_t     VOLUME            = 128u;
-
-  aprs_pico_send_sine_wave(audio_buffer_pool, FREQ_IN_HZ, SAMPLE_FREQ_IN_HZ, VOLUME);
-
-#else // !SINE_WAVE_TEST
-
-  double alt_in_m = 0.0f;
+  // Let the altitude run over time
+  double alt_in_m = 0.0;
 
   while (true) // Loop forever
     {
@@ -49,16 +37,15 @@ int main()
                          "DL3TG",  // Destination call sign
                          "PATH1",  // APRS path #1
                          "PATH2",  // APRS path #2
-                         "APRS by RPi-Pico - https://github.com/eleccoder/raspi-pico-aprs-tnc", // APRS message
+                         "APRS by RPi-Pico - https://github.com/eleccoder/raspi-pico-aprs-tnc", // Text message
                          10.0,     // Latitude  (in deg)
                          20.0,     // Longitude (in deg)
                          alt_in_m, // Altitude  (in m)
                          128u);    // Volume    (0 ... 256)
 
+      // Don't raise too high ...
       alt_in_m = (alt_in_m < 1000.0) ? alt_in_m + 100.0 : 0.0;
     }
-
-#endif // SINE_WAVE_TEST, !SINE_WAVE_TEST
 
   return 0;
 }
