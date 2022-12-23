@@ -90,7 +90,7 @@ arecord -f cd -c 1 - | direwolf -
 
 ### Audio file of the 'beacon' demo
 
-Here is a [recorded audio wav-file]((https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/aprs_pico_beacon_demo.wav) captured by the soundcard using `arecord -f cd -c 1 -t wav > aprs_pico_beacon_demo.wav`.
+Here is a [recorded audio wav-file](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/aprs_pico_beacon_demo.wav) captured by the soundcard using `arecord -f cd -c 1 -t wav > aprs_pico_beacon_demo.wav`.
 
 You can replay and decode this file by:
 
