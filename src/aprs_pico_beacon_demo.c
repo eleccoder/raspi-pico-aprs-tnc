@@ -19,6 +19,8 @@
 #include "aprs_pico.h"
 #include "pico/stdlib.h"
 
+#include <stdbool.h>
+
 
 int main()
 {
