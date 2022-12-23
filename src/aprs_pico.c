@@ -106,18 +106,23 @@ static void aprs_pico_initClock(unsigned int sample_freq_in_hz)
  * \param[in]      pcm_data           The PCM audio samples to be rendered
  * \param[in]      num_samples        The number of PCM audio samples to be rendered
  * \param[in]      volume             The volume level of the generated AFSK signal (0 ... 256)
- * \param[in]      is_loop_forever    If 'true', rendering of the audio samples will be continuously repeated
+ * \param[in]      num_loops          For 'num_loops' >= 0  rendering of the audio samples will be repeated 'num_loops' times
+ *                                    For 'num_loops'  < 0, rendering of the audio samples will be endlessly repeated
  */
 static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool, const int16_t* pcm_data,
-                                         unsigned int num_samples, uint16_t volume, bool is_loop_forever)
+                                         unsigned int num_samples, uint16_t volume, int num_loops)
 {
   assert(audio_buffer_pool != NULL);
   assert(pcm_data          != NULL);
 
-  unsigned int idx_src                  = 0u;
-  bool         is_all_samples_processed = num_samples == 0u;
+  bool do_loop_forever          = num_loops < 0;
+  bool is_all_samples_processed = (num_samples == 0u) || (num_loops == 0);
+
+  unsigned int idx_src = 0u;
 
   // Write the PCM sample data into the next audio buffer while applying the 'volume' value
+
+  // Loop over audio buffers
   while (!is_all_samples_processed)
     {
       audio_buffer_t* audio_buffer          = take_audio_buffer(audio_buffer_pool, true);
@@ -125,6 +130,7 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
 
       unsigned int idx_dst = 0u;
 
+      // Fill the current audio buffer
       while (!is_all_samples_processed && (idx_dst < audio_buffer->max_sample_count))
         {
           audio_buffer_pcm_data[idx_dst] = ((int32_t)volume * (int32_t)pcm_data[idx_src]) >> 8u;
@@ -134,13 +140,18 @@ static void aprs_pico_renderAudioSamples(audio_buffer_pool_t* audio_buffer_pool,
 
           if (idx_src == num_samples)
             {
-              if (is_loop_forever)
+              if (!do_loop_forever)
                 {
-                  idx_src = 0u;
+                  num_loops--;
+                }
+
+              if (num_loops == 0)
+                {
+                  is_all_samples_processed = true;
                 }
               else
                 {
-                  is_all_samples_processed = true;
+                  idx_src = 0u;
                 }
             }
         }
@@ -169,7 +180,7 @@ static void aprs_pico_sendAPRSAudioCallback(const void* callback_user_data, cons
   const AudioCallBackUserData_t user_data = *((AudioCallBackUserData_t*)callback_user_data);
 
   aprs_pico_initClock(sample_freq_in_hz);
-  aprs_pico_renderAudioSamples(user_data.audio_buffer_pool, pcm_data, num_samples, user_data.volume, false);
+  aprs_pico_renderAudioSamples(user_data.audio_buffer_pool, pcm_data, num_samples, user_data.volume, 1);
 }
 
 
@@ -183,7 +194,8 @@ audio_buffer_pool_t* aprs_pico_init()
 
 
 // See the header file for documentation
-void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, unsigned int sample_freq_in_hz, uint16_t volume)
+void aprs_pico_play_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz,
+                              unsigned int sample_freq_in_hz, uint16_t volume, int duration_in_ms)
 {
   assert(audio_buffer_pool != NULL);
 
@@ -207,7 +219,9 @@ void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned i
       sine_period_wave_table[i] = (wave_table_value_t)((float)WAVE_TABLE_VALUE_MAX * sinf(2.0f * (float)M_PI * (float)i / (float)num_samples_per_period));
     }
 
-  aprs_pico_renderAudioSamples(audio_buffer_pool, sine_period_wave_table, num_samples_per_period, volume, true);
+  const int num_loops = duration_in_ms < 0 ? -1 : (duration_in_ms * (int)freq_in_hz / 1000);
+
+  aprs_pico_renderAudioSamples(audio_buffer_pool, sine_period_wave_table, num_samples_per_period, volume, num_loops);
 
   free(sine_period_wave_table);
 }

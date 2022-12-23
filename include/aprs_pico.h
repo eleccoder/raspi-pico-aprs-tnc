@@ -66,5 +66,8 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
  * \param[in]      freq_in_hz         The frequency of the sine wave to be generated (in Hz)
  * \param[in]      sample_freq_in_hz  The sampling frequency of the sine wave to be generated (in Hz)
  * \param[in]      volume             The volume level of the generated signal (0 ... 256)
+ * \param[in]      duration_in_ms     For 'duration_in_ms' >= 0: Duration of the sine wave playing (in ms)
+ *                                    For 'duration_in_ms'  < 0: Plays the sine wave endlessly
  */
-void aprs_pico_send_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz, unsigned int sample_freq_in_hz, uint16_t volume);
+void aprs_pico_play_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz,
+                              unsigned int sample_freq_in_hz, uint16_t volume, int duration_in_ms);
