@@ -19,20 +19,32 @@
 #include "aprs_pico.h"
 #include "pico/stdlib.h"
 
+#include <stdbool.h>
+
 
 int main()
 {
   // 48 kHz is used as a default by the underlying https://github.com/eleccoder/ax25-aprs-lib library
   // The PWM base frequency is expected to be 16 * SAMPLE_FREQ_IN_HZ
-  const unsigned int SAMPLE_FREQ_IN_HZ = 48000u;
+  const unsigned int SAMPLE_FREQ_IN_HZ   = 48000u;
 
-  const unsigned int TONE_FREQ_IN_HZ   = 1000u;
-  const uint16_t     VOLUME            = 128u;   // 0 ... 256
+  const uint16_t     VOLUME              = 128u; // 0 ... 256
+  const int          TONE_DURATION_IN_MS = 5000;
 
   stdio_init_all();
+
   audio_buffer_pool_t* audio_buffer_pool = aprs_pico_init();
 
-  aprs_pico_send_sine_wave(audio_buffer_pool, TONE_FREQ_IN_HZ, SAMPLE_FREQ_IN_HZ, VOLUME);
+  bool is_lower_tone = true;
+
+  while (true)
+    {
+      const unsigned int tone_freq_in_hz = is_lower_tone ? 1200u : 2200u;
+
+      aprs_pico_play_sine_wave(audio_buffer_pool, tone_freq_in_hz, SAMPLE_FREQ_IN_HZ, VOLUME, TONE_DURATION_IN_MS);
+
+      is_lower_tone = !is_lower_tone;
+    }
 
   return 0;
 }
