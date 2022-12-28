@@ -108,10 +108,17 @@ You can replay and decode this file by:
 cat aprs_pico_beacon_demo.wav | direwolf -
 ```
 
+## Going on the air: RF-transmission with a *Baofeng UV-5* HT
+
+If you actually want to RF-transmit the APRS signal, you can simply do it by one of the many cheap HTs, like the *Baofeng UV-5*. The complete schedule including PTT control looks like this:
+
+![APRS-Pico with Baofeng_UV-5](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/APRS_Pico_with_Baofeng_UV-5R.png)
+
+Don't forget to set the appropriate `#define` parameters in `src/aprs_pico_beacon_demo.c` to enable PTT control.
+
 ## TODO (Dec. 2022)
 
 - [x] Send the APRS message on the console (USB or UART) rather than hard-coding
-- [x] Show how to physically connect to a Baofeng HT
 
 ## Ingredients / Acknowledgements
 
