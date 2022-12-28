@@ -52,24 +52,26 @@ cmake --build build
 
 ## Run the 'beacon' demo application
 
+The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required). But for testing the signal integrity, you can feed the signal into the soundcard of your computer and let decode its data content by [Dire Wolf](https://github.com/wb2osz/direwolf) - see down below.
+
 ### Flash the Pico
 
 ```
 cd build
-Flash 'aprs_pico_beacon_demo[.uf2|.elf|.bin|.hex]' to the Pico board as usual.
 ```
 
-The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
+Flash 'aprs_pico_beacon_demo[.uf2|.elf|.bin|.hex]' to the Pico board as you're usually doing.
+
 
 ### Test the 'beacon' demo application using *Dire Wolf* (on LINUX)
 
 We can use the famous [Dire Wolf](https://github.com/wb2osz/direwolf) CLI software to decode the APRS data after sampling our APRS audio signal by means of a soundcard.
 
 1. Connect the line-out of our circuit above to the microphone input of your soundcard of your (ALSA-supported) LINUX system.
-2. Check if you can hear the typical APRS 'modem-sound' on your audio output device by monitoring the input signal:
+2. Check if you can hear the typical APRS 'modem-sound' on your audio output device by monitoring the input signal (44.1 kHz, mono, WAVE):
 
 ```
-arecord -f cd -c 1 - | aplay -f cd -c 1
+arecord -f cd -c 1 - | aplay
 ```
 
 3. Install [Dire Wolf](https://github.com/wb2osz/direwolf) on your system. Probably, you just have to run:
@@ -78,7 +80,7 @@ arecord -f cd -c 1 - | aplay -f cd -c 1
 sudo apt install direwolf
 ```
 
-4. Let's sample the APRS audio signal fed to the soundcard and forward the audio stream to *Dire Wolf*:
+4. Let's sample the APRS audio signal fed to the soundcard and forward the audio stream to *Dire Wolf* (44.1 kHz, mono, WAVE):
 
 ```
 arecord -f cd -c 1 - | direwolf -
@@ -90,7 +92,11 @@ arecord -f cd -c 1 - | direwolf -
 
 ### Audio file of the 'beacon' demo
 
-Here is a [recorded audio wav-file](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/aprs_pico_beacon_demo.wav) captured by the soundcard using `arecord -f cd -c 1 -t wav > aprs_pico_beacon_demo.wav`.
+Here is a [recorded audio wav-file](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/aprs_pico_beacon_demo.wav) (44.1 kHz, mono, WAVE) captured by the soundcard using:
+
+```
+arecord -f cd -c 1 > aprs_pico_beacon_demo.wav
+```
 
 You can replay and decode this file by:
 
