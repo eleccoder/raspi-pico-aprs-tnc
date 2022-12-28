@@ -16,23 +16,50 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+/* This program demonstrates the usage of the 'libaprs_pico.a' library by showing
+ * how to send a static APRS beacon.
+ *
+ * Optionally, PTT control can be enabled (see the #define section down below).
+ */
+
+// Define whether/how the RPi Pico should control a transmitter's PTT input
+#define PTT_ENABLE                   (false)
+#define PTT_GPXX_PIN                 (1)
+#define PTT_DELAY_BEFORE_TX_IN_MSEC  (400)
+#define PTT_TX_PERIOD_IN_MIN         (10)
+
+
 #include "aprs_pico.h"
 #include "pico/stdlib.h"
 
 #include <stdbool.h>
 
 
+
 int main()
 {
   stdio_init_all();
 
+#if PTT_ENABLE == true
+
+  gpio_init(PTT_GPXX_PIN);
+  gpio_set_dir(PTT_GPXX_PIN, GPIO_OUT);
+
+#endif // PTT_ENABLE
+
   audio_buffer_pool_t* audio_buffer_pool = aprs_pico_init();
 
-  // Let the altitude run over time
-  double alt_in_m = 0.0;
-
-  while (true) // Loop forever
+  // Loop forever
+  while (true)
     {
+#if PTT_ENABLE == true
+
+      gpio_put(PTT_GPXX_PIN, true);
+      sleep_ms(PTT_DELAY_BEFORE_TX_IN_MSEC);
+
+#endif // PTT_ENABLE
+
       // Send an APRS test message
       aprs_pico_sendAPRS(audio_buffer_pool,
                          "DL3TG-9",  // Source call sign
@@ -42,13 +69,17 @@ int main()
                          "APRS by RPi-Pico - https://github.com/eleccoder/raspi-pico-aprs-tnc", // Text message
                          48.75588,   // Latitude  (in deg)
                          9.19011,    // Longitude (in deg)
-                         alt_in_m,   // Altitude  (in m)
+                         483,        // Altitude  (in m)
                          '/',        // APRS symbol table: Primary
                          '>',        // APRS symbol code:  Car
                          128u);      // Volume    (0 ... 256)
 
-      // Don't raise too high ...
-      alt_in_m = (alt_in_m < 1000.0) ? alt_in_m + 100.0 : 0.0;
+#if PTT_ENABLE == true
+
+      gpio_put(PTT_GPXX_PIN, false);
+      sleep_ms(PTT_TX_PERIOD_IN_MIN * 60 * 1000);
+
+#endif // PTT_ENABLE
     }
 
   return 0;

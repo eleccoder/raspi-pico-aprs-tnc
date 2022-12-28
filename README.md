@@ -41,6 +41,8 @@ The line-out voltage can be as high as 2.7 V<sub>pp</sub> (~1 V<sub>rms</sub>) (
 
 ## Build the library and the 'beacon' demo application
 
+NOTE: In case you want to allow the Pico to control the PTT (*Push-To-Talk*) input of your transmitter, set the appropriate `#define` parameters in `src/aprs_pico_beacon_demo.c`.
+
 ```
 git clone https://github.com/eleccoder/raspi-pico-aprs-tnc.git
 cd raspi-pico-aprs-tnc
@@ -52,7 +54,9 @@ cmake --build build
 
 ## Run the 'beacon' demo application
 
-The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required). But for testing the signal integrity, you can feed the signal into the soundcard of your computer and let decode its data content by [Dire Wolf](https://github.com/wb2osz/direwolf) - see down below.
+The analog AFSK audio signal will be available at the filter's line-out. You can probe it by a scope, listen to it by using an audio amp, or connect it to any RF transceiver to send it on the air (ham radio license required).
+
+But for testing the signal integrity, you can feed the signal into the soundcard of your computer and let decode its data content by [Dire Wolf](https://github.com/wb2osz/direwolf) - see down below.
 
 ### Flash the Pico
 
@@ -60,7 +64,7 @@ The analog AFSK audio signal will be available at the filter's line-out. You can
 cd build
 ```
 
-Flash 'aprs_pico_beacon_demo[.uf2|.elf|.bin|.hex]' to the Pico board as you're usually doing.
+Flash `aprs_pico_beacon_demo[.uf2|.elf|.bin|.hex]` to the Pico board as you're usually doing.
 
 
 ### Test the 'beacon' demo application using *Dire Wolf* (on LINUX)
