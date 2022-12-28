@@ -111,7 +111,6 @@ cat aprs_pico_beacon_demo.wav | direwolf -
 ## TODO (Dec. 2022)
 
 - [x] Send the APRS message on the console (USB or UART) rather than hard-coding
-- [x] PTT control for RF transceivers
 - [x] Show how to physically connect to a Baofeng HT
 
 ## Ingredients / Acknowledgements
