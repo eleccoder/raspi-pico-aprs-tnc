@@ -35,15 +35,17 @@ int main()
     {
       // Send an APRS test message
       aprs_pico_sendAPRS(audio_buffer_pool,
-                         "DL3TG",  // Source call sign
-                         "DL3TG",  // Destination call sign
-                         "PATH1",  // APRS path #1
-                         "PATH2",  // APRS path #2
+                         "DL3TG-9",  // Source call sign
+                         "APPIPI",   // Destination call sign
+                         "WIDE1-1",  // APRS path #1
+                         "WIDE2-2",  // APRS path #2
                          "APRS by RPi-Pico - https://github.com/eleccoder/raspi-pico-aprs-tnc", // Text message
-                         10.0,     // Latitude  (in deg)
-                         20.0,     // Longitude (in deg)
-                         alt_in_m, // Altitude  (in m)
-                         128u);    // Volume    (0 ... 256)
+                         48.75588,   // Latitude  (in deg)
+                         9.19011,    // Longitude (in deg)
+                         alt_in_m,   // Altitude  (in m)
+                         '/',        // APRS symbol table: Primary
+                         '>',        // APRS symbol code:  Car
+                         128u);      // Volume    (0 ... 256)
 
       // Don't raise too high ...
       alt_in_m = (alt_in_m < 1000.0) ? alt_in_m + 100.0 : 0.0;

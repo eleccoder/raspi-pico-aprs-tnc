@@ -42,6 +42,8 @@ audio_buffer_pool_t* aprs_pico_init();
  * \param[in]      latitude_in_deg    The latitude  of the geo-location (in degrees)
  * \param[in]      longitude_in_deg   The longitude of the geo-location (in degrees)
  * \param[in]      altitude_in_m      The altitude  of the geo-location (in meters)
+ * \param[in]      sym_table          The APRS symbol table (e.g. '/' stands for 'Primary')
+ * \param[in]      sym_code           The APRS symbol code  (e.g. '-' stands for 'House QTH')
  * \param[in]      volume             The volume level of the generated signal (0 ... 256)
  *
  * \retval         'true'  - Successful operation
@@ -57,6 +59,8 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                         double               latitude_in_deg,
                         double               longitude_in_deg,
                         double               altitude_in_m,
+                        char                 sym_table,
+                        char                 sym_code,
                         uint16_t             volume);
 
 

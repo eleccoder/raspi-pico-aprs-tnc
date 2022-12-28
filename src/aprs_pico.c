@@ -237,6 +237,8 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                         double               latitude_in_deg,
                         double               longitude_in_deg,
                         double               altitude_in_m,
+                        char                 sym_table,
+                        char                 sym_code,
                         uint16_t             volume)
 {
   // NOTE: 'aprs_message' is allowed to be 'NULL'
@@ -261,7 +263,8 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
                             longitude_in_deg,
                             altitude_in_m,
                             aprs_message,
-                            '/', 'O');
+                            sym_table,
+                            sym_code);
 
   return ret_val == AX25_OK;
 }
