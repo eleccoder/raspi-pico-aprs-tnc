@@ -116,12 +116,12 @@ If you actually want to RF-transmit the APRS signal, you can simply do it by one
 
 Don't forget to set the appropriate `#define` parameters in `src/aprs_pico_beacon_demo.c` to configure PTT control.
 
-## TODO (Dec. 2022)
+## TODO
 
 - [x] Send the APRS message on the console (USB or UART) rather than hard-coding
 
 ## Ingredients / Acknowledgements
 
-- For `APRS => AX.25 => PCM` conversion I'm using [my modified version](https://github.com/eleccoder/ax25-aprs-lib) of [fsphil's ax25beacon](https://github.com/fsphil/ax25beacon) project.
+- For `APRS Payload => AX.25 => AFSK (PCM)` conversion I'm using [my modified version](https://github.com/eleccoder/ax25-aprs-lib) of [fsphil's ax25beacon](https://github.com/fsphil/ax25beacon) project.
 - For `PCM => PWM` conversion I'm using the `pico_audio_pwm` library from [pico-extras](https://github.com/raspberrypi/pico-extras) (NOTE: ATTOW, maturity seems to be rather alpha/beta).
 - Basic PWM audio rendering with the Pi Pico has been spotted in the [pico-playground](https://github.com/raspberrypi/pico-playground/tree/master/audio).
