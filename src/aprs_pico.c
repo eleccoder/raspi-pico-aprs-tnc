@@ -20,6 +20,7 @@
 
 #include "ax25beacon.h"
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 
 #include <math.h>
 
