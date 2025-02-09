@@ -18,6 +18,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -75,3 +79,7 @@ bool aprs_pico_sendAPRS(audio_buffer_pool_t* audio_buffer_pool,
  */
 void aprs_pico_play_sine_wave(audio_buffer_pool_t* audio_buffer_pool, unsigned int freq_in_hz,
                               unsigned int sample_freq_in_hz, uint16_t volume, int duration_in_ms);
+
+#ifdef __cplusplus
+}
+#endif
