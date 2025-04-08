@@ -38,6 +38,12 @@ typedef struct AudioCallBackUserData
 
 } AudioCallBackUserData_t;
 
+audio_format_t audio_format = {.format        = 0,
+                               .sample_freq   = 0,
+                               .channel_count = 1};
+
+audio_buffer_format_t producer_format = {.format        = &audio_format,
+                                         .sample_stride = 2};
 
 /** \brief Init function for the Pico audio PWM library
  *
@@ -52,12 +58,8 @@ static audio_buffer_pool_t* aprs_pico_initAudio(unsigned int sample_freq_in_hz, 
   const int NUM_AUDIO_BUFFERS  = 3;
   const int SAMPLES_PER_BUFFER = 256;
 
-  const audio_format_t audio_format = {.format        = audio_buffer_format,
-                                       .sample_freq   = sample_freq_in_hz,
-                                       .channel_count = 1};
-
-  audio_buffer_format_t producer_format = {.format        = &audio_format,
-                                           .sample_stride = 2};
+  audio_format.format = audio_buffer_format;
+  audio_format.sample_freq = sample_freq_in_hz;
 
   audio_buffer_pool_t* producer_pool = audio_new_producer_pool(&producer_format, NUM_AUDIO_BUFFERS, SAMPLES_PER_BUFFER);
 
