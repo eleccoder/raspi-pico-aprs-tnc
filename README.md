@@ -1,7 +1,7 @@
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/eleccoder/raspi-pico-aprs-tnc">
 
 # raspi-pico-aprs-tnc
-A TX-only [TNC](https://en.wikipedia.org/wiki/Terminal_node_controller) (Terminal Node Controller) to generate the [AFSK](https://en.wikipedia.org/wiki/Frequency-shift_keying#Audio_FSK) (Audio Frequency-Shift Keying) audio tones for [APRS](https://en.wikipedia.org/wiki/Automatic_Packet_Reporting_System) (Automatic Packet Reporting System) messages using a [RP2040](https://en.wikipedia.org/wiki/RP2040) microcontroller on a [Raspberry Pi Pico](https://en.wikipedia.org/wiki/Raspberry_Pi#Pico_series) board. Works also for the newer [RP2350](https://en.wikipedia.org/wiki/RP2350) microcontroller on a [Raspberry Pi Pico2] board.
+A TX-only [TNC](https://en.wikipedia.org/wiki/Terminal_node_controller) (Terminal Node Controller) to generate the [AFSK](https://en.wikipedia.org/wiki/Frequency-shift_keying#Audio_FSK) (Audio Frequency-Shift Keying) audio tones for [APRS](https://en.wikipedia.org/wiki/Automatic_Packet_Reporting_System) (Automatic Packet Reporting System) messages using a [RP2040](https://en.wikipedia.org/wiki/RP2040) microcontroller on a [Raspberry Pi Pico](https://en.wikipedia.org/wiki/Raspberry_Pi#Pico_series) board. Works also for the newer [RP2350](https://en.wikipedia.org/wiki/RP2350) microcontroller on a Pico2 board.
 
 ![Signal Flow](https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/main/doc/img/signal_flow.png)
 
